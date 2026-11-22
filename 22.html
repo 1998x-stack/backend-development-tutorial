@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 22 章 · K8s 生产运维实战</h1>
+            <p class="dek">部署只是开始。本章讲清 requests 与 limits 的调优、HPA 自动扩缩容、三种健康检查、RBAC，以及故障演练的应对策略。</p>
+        </header>
 
         <h2>开篇：部署只是开始，运维才是日常</h2>
 
@@ -155,6 +161,25 @@ spec:
         periodSeconds: 15</code></pre>
 
         <p>HPA 的行为配置（behavior）是不容忽视的细节。上面的配置中，scaleDown 设置了 300 秒的稳定窗口——这意味着 CPU 降下来后，HPA 会等待 5 分钟再开始缩容，避免"流量波动的波谷瞬间"导致的误缩。scaleUp 设置了 0 秒窗口 + 每次允许翻倍的激进策略，确保在流量突增时 Pod 能快速扩容。你需要在"响应速度"和"稳定性"之间找到平衡——不同业务场景需要的参数差异很大。</p>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig22a-title fig22a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig22a-title">HPA 自动扩缩容的反馈回路</title>
+                <desc id="fig22a-desc">指标服务提供 CPU/内存使用率，HPA 控制器据此调整 Deployment 副本数，Pod 数量变化又反过来影响指标。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">HPA：盯指标 → 调副本数（教学示意）</text>
+                <rect x="30" y="88" width="170" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="115" y="118" text-anchor="middle" font-size="13">指标采集</text><text x="115" y="140" text-anchor="middle" font-size="12" fill="#475569">CPU / 内存使用率</text>
+                <rect x="250" y="88" width="170" height="70" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/><text x="335" y="118" text-anchor="middle" font-size="13">HPA 控制器</text><text x="335" y="140" text-anchor="middle" font-size="12" fill="#475569">目标：使用率 60%</text>
+                <rect x="470" y="48" width="220" height="56" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="580" y="82" text-anchor="middle" font-size="13">Deployment 副本数</text>
+                <rect x="470" y="140" width="220" height="56" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="580" y="167" text-anchor="middle" font-size="13">Pod：2 → 5 → 2</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M200 123 H242"/><path d="M420 123 L462 78"/><path d="M580 104 V132"/></g>
+                <g fill="#64748b"><polygon points="242,117 250,123 242,129"/><polygon points="454,72 462,76 456,84"/><polygon points="574,132 580,140 586,132"/></g>
+                <path d="M470 168 H180 V160" stroke="#d06d4d" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+                <text x="320" y="192" font-size="12" fill="#a2432a">指标变化又反馈给采集端（闭环）</text>
+                <text x="420" y="222" text-anchor="middle" font-size="12" fill="#64748b">扩缩容有冷却窗口，避免见状立即震荡</text>
+            </svg>
+            <figcaption>HPA 不是凭空预测，而是“当前值 vs 目标值”的比例闭环：使用率高于目标就加副本，低于则减。设置合理的 requests 与冷却窗口，才能避免频繁震荡。</figcaption>
+        </figure>
 
         <h2>健康检查：liveness vs readiness vs startup probe</h2>
 
@@ -295,7 +320,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="23.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

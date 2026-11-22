@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 23 章 · GitOps 与声明式运维</h1>
+            <p class="dek">让 Git 成为集群的唯一真相来源。本章讲清 GitOps 四原则、ArgoCD 的同步与漂移检测、Helm 与 Kustomize 的取舍，以及多集群管理。</p>
+        </header>
 
         <h2>开篇：Git 是唯一的真相来源——GitOps 哲学</h2>
 
@@ -117,6 +123,26 @@
         <div class="tip">
             <strong>实践建议：</strong>刚开始落地 GitOps 时，不必追求"一步到位"。先从单个非关键环境（比如 staging）做起，让团队习惯"改 Git → 等同步 → 验证"的工作流。跑顺之后，再扩展到生产环境。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig23a-title fig23a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig23a-title">GitOps 的拉取式同步回路</title>
+                <desc id="fig23a-desc">开发者以 PR 修改 Git 中的期望状态，集群内的控制器主动拉取并与实际状态对比、回写。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">集群主动拉取，而非 CI 推入（教学示意）</text>
+                <rect x="30" y="90" width="150" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="105" y="130" text-anchor="middle" font-size="14">开发者</text>
+                <rect x="250" y="90" width="180" height="70" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/><text x="340" y="121" text-anchor="middle" font-size="14">Git 仓库</text><text x="340" y="143" text-anchor="middle" font-size="12" fill="#475569">期望状态（声明式）</text>
+                <rect x="500" y="90" width="150" height="70" rx="12" fill="#ede9fe" stroke="#c4b5fd"/><text x="575" y="121" text-anchor="middle" font-size="14">ArgoCD</text><text x="575" y="143" text-anchor="middle" font-size="12" fill="#475569">集群内控制器</text>
+                <rect x="690" y="90" width="120" height="70" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="750" y="130" text-anchor="middle" font-size="14">集群</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M180 120 H242"/><path d="M430 120 H492"/><path d="M650 120 H682"/></g>
+                <g fill="#64748b"><polygon points="242,114 250,120 242,126"/><polygon points="492,114 500,120 492,126"/><polygon points="682,114 690,120 682,126"/></g>
+                <g font-size="12" fill="#334155" text-anchor="middle"><text x="211" y="106">PR</text><text x="461" y="106">拉取</text><text x="666" y="106">应用</text></g>
+                <path d="M690 168 H340 V160" stroke="#d06d4d" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+                <text x="440" y="192" font-size="12" fill="#a2432a">漂移检测：实际状态≠期望状态时自动纠偏或告警</text>
+                <text x="420" y="220" text-anchor="middle" font-size="12" fill="#64748b">集群只需对 Git 的只读权限，降低凭据风险</text>
+            </svg>
+            <figcaption>与 CI 把改动“推”进集群不同，GitOps 让集群内的控制器“拉”Git 期望状态：权限更小、审计更清、集群重建时可从 Git 复原。漂移检测是把实际状态拉回期望状态的关键。</figcaption>
+        </figure>
 
         <h2>ArgoCD 实战：Application / AppProject、Sync 策略、差异可视化</h2>
 
@@ -381,7 +407,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="24.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

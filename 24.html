@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 24 章 · 可观测性进阶</h1>
+            <p class="dek">从“服务挂了”到“第 37 行代码的 GC 暂停了 200ms”。本章讲 OpenTelemetry 统一采集、分布式追踪、eBPF 零侵入观测，以及 SLO 与错误预算。</p>
+        </header>
 
         <h2>开篇：从"服务挂了"到"第37行代码的GC暂停了200ms"</h2>
 
@@ -191,6 +197,25 @@ func initMeter() (*sdkmetric.MeterProvider, error) {
         <div class="warning">
             <strong>踩坑故事：</strong>分布式追踪最大的陷阱是<strong>采样率</strong>。我们初期把采样率设成了 100%（生产环境，每秒数千请求），结果 Jaeger 直接 OOM，存储集群被写爆。后来改为"基于头部的概率采样"（10% 的请求被采样）加上"基于尾部的关键错误采样"（只要请求返回 5xx 就 100% 采样），才在成本和可观测性之间找到平衡。切记：<strong>100% 采样在生产环境中几乎永远不是正确选择</strong>。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig24a-title fig24a-desc" viewBox="0 0 840 250" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig24a-title">分布式追踪的瀑布图</title>
+                <desc id="fig24a-desc">一个 300ms 的请求被拆成多个子 span，可以看出耗时集中在 SQL 查询上。</desc>
+                <rect x="0" y="0" width="840" height="250" rx="16" fill="#f8fafc"/>
+                <text x="420" y="30" text-anchor="middle" font-size="18" fill="#1e3a5f">一次慢请求的 span 花销（教学示意）</text>
+                <g font-size="12" fill="#64748b" text-anchor="middle"><text x="180" y="58">0</text><text x="387" y="58">100ms</text><text x="593" y="58">200ms</text><text x="800" y="58">300ms</text></g>
+                <g stroke="#cbd5e1" stroke-width="1"><path d="M180 62 V212"/><path d="M387 62 V212"/><path d="M593 62 V212"/><path d="M800 62 V212"/></g>
+                <g font-size="13" fill="#0f172a" text-anchor="end"><text x="170" y="94">GET /orders</text><text x="170" y="130">query orders</text><text x="170" y="166">SQL SELECT</text><text x="170" y="202">redis get</text></g>
+                <rect x="180" y="78" width="620" height="22" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="201" y="114" width="496" height="22" rx="6" fill="#e0f2fe" stroke="#7dd3fc"/>
+                <rect x="263" y="150" width="372" height="22" rx="6" fill="#fee2e2" stroke="#fca5a5"/>
+                <rect x="697" y="186" width="31" height="22" rx="6" fill="#dcfce7" stroke="#86efac"/>
+                <g font-size="12" fill="#334155"><text x="210" y="94">300ms</text><text x="705" y="130">240ms</text><text x="641" y="166" fill="#b91c1c">180ms（瓶颈）</text><text x="734" y="202">15ms</text></g>
+                <text x="420" y="240" text-anchor="middle" font-size="12" fill="#64748b">子 span 的耗时可以相减，定位到具体哪一跳拖慢了整体</text>
+            </svg>
+            <figcaption>瀑布图把总耗时拆到每一跳：SQL 占 180ms 是主要瓶颈，redis 只花 15ms。有了 traceId 串联，跨服务延迟不再靠盲猜，而是可比较的数值。</figcaption>
+        </figure>
 
         <h2>eBPF 零侵入可观测：Cilium Hubble 网络观测、Pixie 应用性能</h2>
 
@@ -348,7 +373,7 @@ px run -e "
             <a href="index.html">📖 返回目录</a>
             <a href="25.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

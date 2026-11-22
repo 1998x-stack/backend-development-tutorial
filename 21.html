@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 21 章 · K8s 网络与存储</h1>
+            <p class="dek">Pod 之间如何互通，数据如何持久化？本章对比 CNI 插件、Ingress 与 Gateway API、Service Mesh，并拆解 PV / PVC / StorageClass 三部曲。</p>
+        </header>
 
         <h2>开篇：K8s 网络——让 Pod 之间互通的魔法</h2>
 
@@ -249,6 +255,24 @@ spec:
 
         <p>这个三层模型的设计精妙之处在于<strong>解耦</strong>。StatefulSet 使用 volumeClaimTemplates 可以为每个副本自动生成独立的 PVC 和 PV，确保数据库集群的每个节点都有独立、持久的存储。StorageClass 的 <code>allowVolumeExpansion: true</code> 允许在 PVC 中修改 storage 字段后自动扩容——这是云原生存储的标配能力。</p>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig21a-title fig21a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig21a-title">PV / PVC / StorageClass 的绑定关系</title>
+                <desc id="fig21a-desc">Pod 引用 PVC 声明存储需求，PVC 与 PV 绑定，StorageClass 负责按需动态创建 PV。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">谁要存储、谁提供存储、谁负责创建（教学示意）</text>
+                <rect x="30" y="90" width="150" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="105" y="130" text-anchor="middle" font-size="14">Pod 挂载</text>
+                <rect x="230" y="90" width="170" height="70" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/><text x="315" y="121" text-anchor="middle" font-size="14">PVC</text><text x="315" y="143" text-anchor="middle" font-size="12" fill="#475569">声明：10Gi · 可读写</text>
+                <rect x="450" y="90" width="170" height="70" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="535" y="121" text-anchor="middle" font-size="14">PV</text><text x="535" y="143" text-anchor="middle" font-size="12" fill="#475569">实际存储卷</text>
+                <rect x="670" y="90" width="140" height="70" rx="12" fill="#ede9fe" stroke="#c4b5fd"/><text x="740" y="121" text-anchor="middle" font-size="13">StorageClass</text><text x="740" y="143" text-anchor="middle" font-size="12" fill="#475569">动态供给</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M180 120 H222"/><path d="M400 120 H442"/><path d="M670 120 H652"/></g>
+                <g fill="#64748b"><polygon points="222,114 230,120 222,126"/><polygon points="442,114 450,120 442,126"/><polygon points="660,114 652,120 660,126"/></g>
+                <g font-size="12" fill="#334155" text-anchor="middle"><text x="200" y="108">引用</text><text x="420" y="108">绑定</text><text x="690" y="80">按需创建</text></g>
+                <text x="420" y="200" text-anchor="middle" font-size="13" fill="#475569">PVC 是“我想要”，PV 是“实际给的”；StorageClass 让前者自动变成后者</text>
+            </svg>
+            <figcaption>PVC 只描述需求，PV 才是真实存储；StorageClass 负责在 PVC 创建时动态制备 PV。这套“声明—绑定—供给”把存储细节与业务解耦，Pod 重建后数据依然存在。</figcaption>
+        </figure>
+
         <h2>CSI 存储插件选型：云原生存储的分类与选择</h2>
 
         <p>CSI（Container Storage Interface）是 K8s 的存储插件标准，所有现代存储系统都通过 CSI 驱动与 K8s 集成。选择合适的存储系统，需要理解三类主要的云原生存储：</p>
@@ -306,7 +330,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="22.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
