@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 19 章 · Docker 深入与实践</h1>
+            <p class="dek">“在我机器上能跑”的终结者。本章讲清 Image / Container / Volume / Network，用多阶段构建与层缓存把镜像从 1.2GB 瘦到 80MB。</p>
+        </header>
 
         <h2>开篇："在我机器上能跑"——Docker 如何终结这句名言</h2>
 
@@ -136,6 +142,28 @@ ENTRYPOINT ["/app"]</code></pre>
         </div>
 
         <p>这个 Dockerfile 里的几个关键设计点值得多说几句。首先，<code>go mod download</code> 在复制源码之前单独执行——因为 <code>go.mod</code> 和 <code>go.sum</code> 的变化频率远低于业务代码。这样做的好处是：如果你只改了一行业务代码，Docker 从 <code>COPY . .</code> 才开始重建，前面所有层都命中缓存，构建时间从几十秒降到秒级。其次，多阶段构建的最终镜像里只有编译好的二进制文件，没有 Go 编译器、没有源码、没有任何构建工具——镜像小、攻击面小。</p>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig19a-title fig19a-desc" viewBox="0 0 840 250" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig19a-title">多阶段构建：编译环境与运行环境分离</title>
+                <desc id="fig19a-desc">builder 阶段使用完整编译镜像，runtime 阶段只复制编译产物，最终镜像不含源码与工具链。</desc>
+                <rect x="0" y="0" width="840" height="250" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">多阶段构建：编译工具链不进最终镜像（教学示意）</text>
+                <rect x="40" y="66" width="330" height="150" rx="14" fill="#fff" stroke="#7dd3fc"/>
+                <text x="205" y="92" text-anchor="middle" font-size="14" fill="#1e3a5f">builder 阶段（golang 镜像）</text>
+                <rect x="60" y="104" width="290" height="28" rx="7" fill="#e0f2fe" stroke="#7dd3fc"/><text x="205" y="123" text-anchor="middle" font-size="12">基础镜像 + Go 工具链</text>
+                <rect x="60" y="138" width="290" height="28" rx="7" fill="#e0f2fe" stroke="#7dd3fc"/><text x="205" y="157" text-anchor="middle" font-size="12">源码 + 依赖</text>
+                <rect x="60" y="172" width="290" height="28" rx="7" fill="#dcfce7" stroke="#86efac"/><text x="205" y="191" text-anchor="middle" font-size="12">编译出静态二进制</text>
+                <path d="M370 141 H452" stroke="#64748b" stroke-width="3"/><polygon points="452,135 460,141 452,147" fill="#64748b"/>
+                <text x="415" y="128" text-anchor="middle" font-size="12" fill="#334155">COPY</text>
+                <rect x="470" y="66" width="330" height="150" rx="14" fill="#fff" stroke="#86efac"/>
+                <text x="635" y="92" text-anchor="middle" font-size="14" fill="#166534">runtime 阶段（distroless）</text>
+                <rect x="490" y="120" width="290" height="34" rx="7" fill="#dcfce7" stroke="#86efac"/><text x="635" y="142" text-anchor="middle" font-size="13">仅二进制 + 证书</text>
+                <text x="635" y="186" text-anchor="middle" font-size="12" fill="#475569">最终镜像≈80MB，无源码与编译器</text>
+                <text x="420" y="238" text-anchor="middle" font-size="13" fill="#475569">最终镜像的体积只由 runtime 阶段决定，与 builder 无关</text>
+            </svg>
+            <figcaption>用 `FROM ... AS builder` 编译、只用 `COPY --from=builder` 拿走产物，工具链与源码都留在中间层。镜像越小，拉取越快、攻击面越小。</figcaption>
+        </figure>
 
         <h2>镜像瘦身实战：从 1.2GB 到 80MB</h2>
 
@@ -280,7 +308,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
             <a href="index.html">📖 返回目录</a>
             <a href="20.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

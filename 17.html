@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 17 章 · 日志、指标与告警</h1>
+            <p class="dek">凌晨被叫醒却无日志可查，是无数事故的开场。本章讲结构化日志、Prometheus 指标、RED/USE 方法论，以及告警风暴的治理。</p>
+        </header>
 
         <h2>开篇：凌晨 3 点被叫醒——因为没有日志可查</h2>
 
@@ -284,6 +290,23 @@ func main() {
             <strong>🔑 告警设计原则：</strong>告警的可行动性（Actionability）是最重要的。如果你的告警只是"CPU 高了"，值班人员不知道该怎么办——"高多少？持续了多久？哪个进程导致的？"一个好的告警应该是：<strong>"用户服务的 CPU 利用率在过去 15 分钟持续超过 85%，avg_load 达到 12，怀疑是订单处理模块的 goroutine 泄漏，请查看 dashboard X"</strong>。如果收告警的人不知道下一步该做什么，这个告警就是噪音。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig17a-title fig17a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig17a-title">可观测性三支柱与告警链路</title>
+                <desc id="fig17a-desc">应用分别产生日志、指标与追踪三类数据，被采集存储后统一由 Grafana 展示并触发告警。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">日志 / 指标 / 追踪：三支柱汇聚成告警（教学示意）</text>
+                <rect x="30" y="95" width="150" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="105" y="138" text-anchor="middle" font-size="14">应用 / 埋点</text>
+                <rect x="270" y="44" width="220" height="48" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="380" y="73" text-anchor="middle" font-size="13">日志 Logs（Loki）</text>
+                <rect x="270" y="106" width="220" height="48" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="380" y="135" text-anchor="middle" font-size="13">指标 Metrics（Prometheus）</text>
+                <rect x="270" y="168" width="220" height="48" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="380" y="197" text-anchor="middle" font-size="13">追踪 Traces（Tempo）</text>
+                <rect x="600" y="95" width="210" height="70" rx="12" fill="#fef9c3" stroke="#fde047"/><text x="705" y="126" text-anchor="middle" font-size="13">Grafana 仪表盘</text><text x="705" y="148" text-anchor="middle" font-size="12" fill="#b45309">规则 → 告警通知</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M180 120 L262 68"/><path d="M180 130 H262"/><path d="M180 140 L262 192"/><path d="M490 68 L592 115"/><path d="M490 130 H592"/><path d="M490 192 L592 145"/></g>
+                <text x="420" y="246" text-anchor="middle" font-size="13" fill="#475569">三类数据各有擅长：日志查原因、指标看趋势、追踪定位慢在哪一跳</text>
+            </svg>
+            <figcaption>日志回答“发生了什么”，指标回答“是否异常”，追踪回答“慢在哪一跳”。三者用同一个 traceId 串起来，才可能在几分钟内定位问题，而不是靠猜。</figcaption>
+        </figure>
+
         <h2>Grafana 仪表盘实战：从数据源到可视化面板</h2>
 
         <p><strong>Grafana</strong> 是与 Prometheus 搭配最常用的可视化工具。它提供灵活的仪表盘（Dashboard），让你把指标数据变成可视化的图表。搭建一个可用的仪表盘只需要几步：</p>
@@ -364,7 +387,7 @@ inhibit_rules:
             <a href="index.html">📖 返回目录</a>
             <a href="18.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

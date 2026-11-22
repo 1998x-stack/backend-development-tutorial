@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 18 章 · CI/CD 流水线设计</h1>
+            <p class="dek">手动部署的尽头是凌晨三点的回滚。本章讲清持续集成/交付/部署的区别，用 GitHub Actions 实战流水线、缓存与部署策略，以及特性开关。</p>
+        </header>
 
         <h2>开篇：手动部署的尽头是凌晨 3 点的回滚</h2>
 
@@ -224,6 +230,25 @@ jobs:
             <strong>💡 流水线设计原则：</strong>CI 流水线的每个 Job 应该做到<strong>"Fail Fast"</strong>——最可能失败的步骤放最前面。典型的顺序：代码风格检查 → 编译 → 单元测试 → 集成测试 → 构建镜像。如果代码风格检查都不过，就不需要浪费时间和资源去跑后面的测试和构建了。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig18a-title fig18a-desc" viewBox="0 0 840 240" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig18a-title">CI/CD 流水线的典型阶段</title>
+                <desc id="fig18a-desc">代码提交后依次经过构建、测试、镜像打包、部署到预发与生产，任一环节失败都会阻断后续。</desc>
+                <rect x="0" y="0" width="840" height="240" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">一次提交要走完的流水线（教学示意）</text>
+                <rect x="25" y="80" width="140" height="70" rx="10" fill="#dbeafe" stroke="#93c5fd"/><text x="95" y="121" text-anchor="middle" font-size="13">提交代码</text>
+                <rect x="190" y="80" width="140" height="70" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="260" y="121" text-anchor="middle" font-size="13">构建 / 编译</text>
+                <rect x="355" y="80" width="140" height="70" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="425" y="121" text-anchor="middle" font-size="13">测试</text>
+                <rect x="520" y="80" width="140" height="70" rx="10" fill="#fef9c3" stroke="#fde047"/><text x="590" y="121" text-anchor="middle" font-size="13">打包镜像</text>
+                <rect x="685" y="80" width="130" height="70" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="750" y="121" text-anchor="middle" font-size="13">部署</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M165 115 H182"/><path d="M330 115 H347"/><path d="M495 115 H512"/><path d="M660 115 H677"/></g>
+                <g fill="#64748b"><polygon points="182,109 190,115 182,121"/><polygon points="347,109 355,115 347,121"/><polygon points="512,109 520,115 512,121"/><polygon points="677,109 685,115 677,121"/></g>
+                <text x="420" y="188" text-anchor="middle" font-size="13" fill="#475569">任一阶段失败 → 阻断后续并通知；镜像只构建一次，各环境复用同一产物</text>
+                <text x="420" y="214" text-anchor="middle" font-size="12" fill="#64748b">预发与生产用同一镜像，靠配置与 Feature Flag 区分</text>
+            </svg>
+            <figcaption>流水线的价值在于“同一份产物、同一套步骤”。镜像一次构建、多环境复用，才能保证预发验证的行为与生产一致；失败即阻断，避免把问题带往下游。</figcaption>
+        </figure>
+
         <h2>部署策略对比：蓝绿部署 vs 金丝雀发布 vs 滚动更新</h2>
 
         <p>CI 通过了，镜像构建好了，接下来是怎么把新版本部署到生产环境而尽量不影响用户。以下是三种主流的部署策略：</p>
@@ -383,7 +408,7 @@ jobs:
             <a href="index.html">📖 返回目录</a>
             <a href="19.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

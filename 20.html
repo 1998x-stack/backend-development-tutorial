@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 20 章 · Kubernetes 核心概念</h1>
+            <p class="dek">从 docker run 到 kubectl apply，编排解决的是“如何声明期望状态并让它自动实现”。本章剖析 K8s 架构、Pod、Deployment 与 Service。</p>
+        </header>
 
         <h2>开篇：从 docker run 到 kubectl apply——为什么需要编排</h2>
 
@@ -110,6 +116,31 @@
         </table>
 
         <p>这六个组件的协作流程是这样的：你通过 <code>kubectl apply</code> 提交一个 YAML 到 API Server → API Server 校验并将其存入 etcd → Controller Manager 中的对应 Controller 发现当前状态不匹配期望状态 → 创建 Pod 对象 → Scheduler 为 Pod 选择一个 Node → 该 Node 的 Kubelet 通过容器运行时启动容器。整个过程是事件驱动的、异步的，这也是 K8s 声明式模型的精髓。</p>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig20a-title fig20a-desc" viewBox="0 0 840 280" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig20a-title">Kubernetes 控制平面与工作节点</title>
+                <desc id="fig20a-desc">控制平面包含 API Server、etcd、Scheduler、Controller Manager，工作节点上的 kubelet 按调度运行 Pod。</desc>
+                <rect x="0" y="0" width="840" height="280" rx="16" fill="#f8fafc"/>
+                <text x="420" y="30" text-anchor="middle" font-size="18" fill="#1e3a5f">控制平面下发期望状态，工作节点执行（教学示意）</text>
+                <rect x="30" y="48" width="780" height="82" rx="14" fill="#fff" stroke="#7dd3fc"/>
+                <text x="60" y="72" font-size="13" fill="#1e3a5f">控制平面 Control Plane</text>
+                <rect x="55" y="84" width="160" height="36" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/><text x="135" y="107" text-anchor="middle" font-size="12">API Server</text>
+                <rect x="235" y="84" width="160" height="36" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/><text x="315" y="107" text-anchor="middle" font-size="12">etcd</text>
+                <rect x="415" y="84" width="170" height="36" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/><text x="500" y="107" text-anchor="middle" font-size="12">Scheduler</text>
+                <rect x="605" y="84" width="185" height="36" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/><text x="697" y="107" text-anchor="middle" font-size="12">Controller Manager</text>
+                <path d="M420 130 V166" stroke="#64748b" stroke-width="3"/><polygon points="414,166 420,174 426,166" fill="#64748b"/>
+                <text x="455" y="154" font-size="12" fill="#334155">kubelet 监听并同步</text>
+                <rect x="30" y="180" width="780" height="80" rx="14" fill="#fff" stroke="#86efac"/>
+                <text x="60" y="204" font-size="13" fill="#166534">工作节点 Worker Node</text>
+                <rect x="55" y="216" width="140" height="34" rx="8" fill="#dcfce7" stroke="#86efac"/><text x="125" y="238" text-anchor="middle" font-size="12">kubelet</text>
+                <rect x="215" y="216" width="120" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd"/><text x="275" y="238" text-anchor="middle" font-size="12">Pod</text>
+                <rect x="355" y="216" width="120" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd"/><text x="415" y="238" text-anchor="middle" font-size="12">Pod</text>
+                <rect x="495" y="216" width="140" height="34" rx="8" fill="#dcfce7" stroke="#86efac"/><text x="565" y="238" text-anchor="middle" font-size="12">kube-proxy</text>
+                <text x="420" y="274" text-anchor="middle" font-size="12" fill="#64748b">Pod 是最小调度单元，可包含一个或多个容器</text>
+            </svg>
+            <figcaption>你只向 API Server 提交“期望状态”，Scheduler 决定 Pod 落在哪个节点，“控制器”不断把实际状态往回拉。这种声明式与自愈，才是编排区别于脚本的核心。</figcaption>
+        </figure>
 
         <h2>Pod：最小调度单元的设计哲学</h2>
 
@@ -288,7 +319,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="21.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
