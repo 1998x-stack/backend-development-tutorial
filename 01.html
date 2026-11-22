@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html" class="active">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 1 章 · 后端开发全景图</h1>
+            <p class="dek">后端是水面下的冰山：用户看到的每一个请求，背后都要经过解析、路由、鉴权、限流、业务处理、持久化与可观测的完整链条。本章建立这套全景认知。</p>
+        </header>
 
         <h2>开篇：为什么后端开发是"看不见的冰山"</h2>
 
@@ -57,6 +63,36 @@
         <div class="highlight">
             <strong>💡 核心认知：</strong>后端开发是构建数字世界的"基础设施工程师"。用户看到的每一个请求，背后都经过 DNS 解析、负载均衡、服务发现、身份认证、频率限制、业务逻辑处理、数据持久化、缓存更新、日志记录、指标采集——这一整个链条，就是后端工程师的职责范围。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig01a-title fig01a-desc" viewBox="0 0 840 200" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig01a-title">一次请求进入后端后经过的处理链条</title>
+                <desc id="fig01a-desc">用户请求依次经过 DNS 解析、负载均衡、认证与限流、业务逻辑、数据持久化、日志与指标采集六个阶段。</desc>
+                <rect x="0" y="0" width="840" height="200" rx="16" fill="#f8fafc"/>
+                <text x="420" y="34" text-anchor="middle" font-size="18" fill="#1e3a5f">一次请求的完整生命周期（教学示意）</text>
+                <rect x="20" y="70" width="112" height="64" rx="12" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="156" y="70" width="112" height="64" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/>
+                <rect x="292" y="70" width="112" height="64" rx="12" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="428" y="70" width="112" height="64" rx="12" fill="#fef9c3" stroke="#fde047"/>
+                <rect x="564" y="70" width="112" height="64" rx="12" fill="#fee2e2" stroke="#fca5a5"/>
+                <rect x="700" y="70" width="112" height="64" rx="12" fill="#ede9fe" stroke="#c4b5fd"/>
+                <g font-size="15" text-anchor="middle" fill="#1e3a5f">
+                    <text x="76" y="108">DNS 解析</text>
+                    <text x="212" y="108">负载均衡</text>
+                    <text x="348" y="108">认证 / 限流</text>
+                    <text x="484" y="108">业务逻辑</text>
+                    <text x="620" y="108">数据持久化</text>
+                    <text x="756" y="108">日志 / 指标</text>
+                </g>
+                <g stroke="#64748b" stroke-width="3" fill="none">
+                    <path d="M134 102 H148"/><path d="M270 102 H284"/><path d="M406 102 H420"/><path d="M542 102 H556"/><path d="M678 102 H692"/>
+                </g>
+                <g fill="#64748b">
+                    <polygon points="148,96 156,102 148,108"/><polygon points="284,96 292,102 284,108"/><polygon points="420,96 428,102 420,108"/><polygon points="556,96 564,102 556,108"/><polygon points="692,96 700,102 692,108"/>
+                </g>
+            </svg>
+            <figcaption>从用户点击到数据落库，一个请求会穿过六类基础设施。任一段失败或变慢，用户都会直接感知——这正是后端复杂性的来源。图为本课程的示意拓扑，非某一具体系统的部署图。</figcaption>
+        </figure>
 
         <h2>后端架构演进史：单体 → SOA → 微服务 → Serverless</h2>
 
@@ -309,7 +345,7 @@ func main() {
             <a href="index.html">📖 返回目录</a>
             <a href="02.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

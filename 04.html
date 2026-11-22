@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 4 章 · 版本控制与协作</h1>
+            <p class="dek">Git 不是"保存按钮"，而是一套基于有向无环图的版本模型。本章讲清对象与引用、分支策略、合并与变基的取舍，以及提交规范与 Code Review。</p>
+        </header>
 
         <h2>开篇：Git 不只是"Save button"</h2>
 
@@ -71,6 +77,29 @@
         </div>
 
         <p>另一个常被忽视的概念是 <strong>staging area（索引/暂存区）</strong>。它的存在让你可以分批次地组织提交——"我要把这个文件的这部分改动和那个文件的改动放在同一个 commit 里，其他改动留到下一个 commit"。很多新手不理解 staging area 的意义，直接 <code>git add . && git commit</code> 走天下。但当你需要精确控制提交粒度时（比如修复一个安全漏洞你要确保相关改动在一个 commit 中，不相关的改动不要混入），staging area 就是你的最佳武器。</p>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig04a-title fig04a-desc" viewBox="0 0 840 220" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig04a-title">Git 的四个区域与流转命令</title>
+                <desc id="fig04a-desc">代码从工作区经 git add 进入暂存区，经 git commit 写入本地仓库，经 git push 同步到远程仓库。</desc>
+                <rect x="0" y="0" width="840" height="220" rx="16" fill="#f8fafc"/>
+                <text x="420" y="34" text-anchor="middle" font-size="18" fill="#1e3a5f">代码在 Git 各区域间的流转（教学示意）</text>
+                <rect x="30" y="80" width="165" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="235" y="80" width="165" height="70" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/>
+                <rect x="440" y="80" width="165" height="70" rx="12" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="645" y="80" width="165" height="70" rx="12" fill="#fef9c3" stroke="#fde047"/>
+                <g font-size="15" text-anchor="middle" fill="#0f172a">
+                    <text x="112" y="112">工作区</text><text x="112" y="134" font-size="12" fill="#475569">Working Dir</text>
+                    <text x="317" y="112">暂存区</text><text x="317" y="134" font-size="12" fill="#475569">Staging / Index</text>
+                    <text x="522" y="112">本地仓库</text><text x="522" y="134" font-size="12" fill="#475569">.git Objects</text>
+                    <text x="727" y="112">远程仓库</text><text x="727" y="134" font-size="12" fill="#475569">Remote</text>
+                </g>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M199 115 H229"/><path d="M404 115 H434"/><path d="M609 115 H639"/></g>
+                <g fill="#64748b"><polygon points="229,109 237,115 229,121"/><polygon points="434,109 442,115 434,121"/><polygon points="639,109 647,115 639,121"/></g>
+                <g font-size="13" text-anchor="middle" fill="#1e40af"><text x="214" y="68">git add</text><text x="419" y="68">git commit</text><text x="624" y="68">git push</text></g>
+            </svg>
+            <figcaption>add / commit / push 三段把改动从工作区逐步固化并共享。看懂这条链路，就能回答"为什么改了文件还要 commit"这类日常疑问。</figcaption>
+        </figure>
 
         <h2>分支策略对比：GitFlow vs GitHub Flow vs Trunk-Based</h2>
 
@@ -223,7 +252,7 @@ BREAKING CHANGE: user service endpoint returns 202 instead of 200</code></pre>
             <a href="index.html">📖 返回目录</a>
             <a href="05.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

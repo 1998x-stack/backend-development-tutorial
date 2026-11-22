@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 3 章 · Linux 基础与环境</h1>
+            <p class="dek">Linux 是后端代码真正运行的地方。本章覆盖文件系统与权限模型、进程与信号、systemd 服务管理、Shell 脚本，以及生产环境的内核参数调优。</p>
+        </header>
 
         <h2>开篇：后端代码的"家"——Linux 服务器</h2>
 
@@ -104,6 +110,28 @@
         <div class="tip">
             <strong>📌 实用技巧：</strong>部署应用时最常遇到的权限问题就是"Permission denied"。记住两条黄金法则：应用进程以什么用户运行，该用户就需要对日志目录有写权限、对配置文件有读权限。不要图省事用 <code>chmod 777</code>——这等于在所有安全措施上开了个大洞。正确的做法是创建专门的系统用户来运行应用，并只赋予最小必要权限。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig03a-title fig03a-desc" viewBox="0 0 840 210" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig03a-title">Linux 权限字符串的三段结构</title>
+                <desc id="fig03a-desc">权限字符串 -rwxr-xr-- 由一位文件类型加三组 rwx 权限组成，依次对应属主、属组和其他用户。</desc>
+                <rect x="0" y="0" width="840" height="210" rx="16" fill="#f8fafc"/>
+                <text x="420" y="34" text-anchor="middle" font-size="18" fill="#1e3a5f">权限字符串 -rwxr-xr-- 的读法（教学示意）</text>
+                <g font-size="15" text-anchor="middle" fill="#334155"><text x="90" y="76">类型</text><text x="230" y="76">属主 user</text><text x="440" y="76">属组 group</text><text x="650" y="76">其他人 other</text></g>
+                <rect x="60" y="88" width="60" height="60" rx="10" fill="#e2e8f0" stroke="#cbd5e1"/>
+                <rect x="130" y="88" width="200" height="60" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="340" y="88" width="200" height="60" rx="10" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="550" y="88" width="200" height="60" rx="10" fill="#fef9c3" stroke="#fde047"/>
+                <g font-size="26" text-anchor="middle" fill="#0f172a">
+                    <text x="90" y="128">-</text>
+                    <text x="163" y="128">r</text><text x="230" y="128">w</text><text x="297" y="128">x</text>
+                    <text x="373" y="128">r</text><text x="440" y="128">-</text><text x="507" y="128">x</text>
+                    <text x="583" y="128">r</text><text x="650" y="128">-</text><text x="717" y="128">-</text>
+                </g>
+                <text x="420" y="182" text-anchor="middle" font-size="15" fill="#475569">rwx 按位取值 4/2/1 相加：rwx=7 · r-x=5 · r--=4 → chmod 754</text>
+            </svg>
+            <figcaption>三段 rwx 分别对属主、属组、其他人授权。把每位的 4/2/1 相加，就得到熟悉的八进制权限码 754。图为本课程的示意标注，非 POSIX 标准的逐字定义。</figcaption>
+        </figure>
 
         <h2>进程管理实战：ps/top/htop、信号、守护进程</h2>
 
@@ -297,7 +325,7 @@ done</code></pre>
             <a href="index.html">📖 返回目录</a>
             <a href="04.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

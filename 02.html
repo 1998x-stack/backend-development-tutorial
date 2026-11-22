@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 2 章 · 网络协议基础</h1>
+            <p class="dek">后端处理的一切，本质上都是"通过网络到达的请求"。本章从 TCP/IP 分层开始，讲清 TCP 的连接与拥塞控制、HTTP/1.1→2→3 的演进动机，以及 DNS 解析的完整链路。</p>
+        </header>
 
         <h2>开篇：为什么后端工程师必须懂网络</h2>
 
@@ -98,6 +104,22 @@
         <div class="highlight">
             <strong>🔑 关键理解：</strong>分层协议栈的核心价值在于"关注点分离"。网络层不用关心传输层传的是什么数据，传输层也不用关心应用层用什么格式。当你排查网络问题时，你可以在某一层上聚焦，而不用每次都从零理解整个链路。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig02a-title fig02a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig02a-title">TCP/IP 四层模型与各层协议</title>
+                <desc id="fig02a-desc">自上而下依次为应用层（HTTP、DNS、WebSocket）、传输层（TCP、UDP）、网络层（IP、ICMP）、链路层（以太网、ARP）。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="30" text-anchor="middle" font-size="18" fill="#1e3a5f">TCP/IP 四层模型（教学示意）</text>
+                <rect x="60" y="50" width="720" height="46" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="60" y="104" width="720" height="46" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+                <rect x="60" y="158" width="720" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="60" y="212" width="720" height="46" rx="10" fill="#fef9c3" stroke="#fde047"/>
+                <g font-size="16" fill="#0f172a"><text x="80" y="79">应用层</text><text x="80" y="133">传输层</text><text x="80" y="187">网络层</text><text x="80" y="241">链路层</text></g>
+                <g font-size="15" fill="#334155" text-anchor="end"><text x="760" y="79">HTTP / DNS / WebSocket</text><text x="760" y="133">TCP / UDP</text><text x="760" y="187">IP / ICMP</text><text x="760" y="241">Ethernet / ARP</text></g>
+            </svg>
+            <figcaption>上层依赖下层提供的服务：HTTP 跑在 TCP 上，TCP 跑在 IP 上。排查"网站打不开"时，先判断是哪一层的责任，比逐个试错高效得多。</figcaption>
+        </figure>
 
         <h2>TCP 核心机制：三次握手、四次挥手、拥塞控制</h2>
 
@@ -262,7 +284,7 @@ $ sudo tcpdump -i eth0 -w capture.pcap host example.com</code></pre>
             <a href="index.html">📖 返回目录</a>
             <a href="03.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
