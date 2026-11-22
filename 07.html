@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 7 章 · 设计模式与架构原则</h1>
+            <p class="dek">设计模式是团队沟通的语言。本章梳理 SOLID 原则、分层与依赖倒置、DDD 战术设计，以及以用例为中心的 Clean Architecture。</p>
+        </header>
 
         <h2>开篇：设计模式不是教条，是沟通语言</h2>
 
@@ -220,6 +226,27 @@ func (m *mockUserRepo) FindByID(ctx context.Context, id int64) (*User, error) {
 
         <p>这个模式看似简单，但实践中常见的问题是"层与层之间职责不清"——Controller 里直接调用 Repository、Service 里写 HTTP 请求代码、Repository 里塞业务逻辑。维护好依赖方向和职责边界，比用什么框架都重要。</p>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig07a-title fig07a-desc" viewBox="0 0 840 300" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig07a-title">Clean Architecture 的四层同心结构</title>
+                <desc id="fig07a-desc">由外到内依次是框架与驱动、接口适配器、用例、实体，依赖方向由外向内，内层不感知外层。</desc>
+                <rect x="0" y="0" width="840" height="300" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">依赖只能从外向内（教学示意）</text>
+                <rect x="50" y="60" width="740" height="210" rx="16" fill="#fef9c3" stroke="#fde047"/>
+                <rect x="120" y="95" width="600" height="150" rx="14" fill="#e0f2fe" stroke="#7dd3fc"/>
+                <rect x="190" y="125" width="460" height="90" rx="12" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="290" y="150" width="260" height="40" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+                <g text-anchor="middle" fill="#0f172a">
+                    <text x="420" y="84" font-size="14">Frameworks &amp; Drivers（Web / DB / UI）</text>
+                    <text x="420" y="115" font-size="14">Interface Adapters（Controller / Presenter / Gateway）</text>
+                    <text x="420" y="145" font-size="14">Use Cases 应用用例</text>
+                    <text x="420" y="175" font-size="15">Entities 领域实体</text>
+                </g>
+                <text x="420" y="258" text-anchor="middle" font-size="13" fill="#1e40af">依赖方向：外层 → 内层（内层绝不 import 外层）</text>
+            </svg>
+            <figcaption>越往里越稳定、越接近业务规则；越往外越易变、越依赖具体技术。换掉数据库或 Web 框架时，内层的用例与实体不应被改动——这就是依赖倒置的收益。</figcaption>
+        </figure>
+
         <h2>DDD 战术设计概要</h2>
 
         <p>领域驱动设计（DDD）分为"战略设计"和"战术设计"两部分。战略设计关注限界上下文和通用语言，适合在微服务拆分和架构规划阶段使用。战术设计则提供了一组具体的建筑块（Building Blocks），让你将领域模型映射到代码中。这里我们聚焦战术设计的核心概念：</p>
@@ -259,7 +286,7 @@ func (m *mockUserRepo) FindByID(ctx context.Context, id int64) (*User, error) {
             <a href="index.html">📖 返回目录</a>
             <a href="08.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

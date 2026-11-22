@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 8 章 · RESTful API 设计</h1>
+            <p class="dek">一套好的 API 设计能省下大量沟通成本。本章讲资源建模、状态码语义、分页策略与版本管理，这些是接口层的基本功。</p>
+        </header>
 
         <h2>开篇：一个好的API设计能省掉100小时的沟通</h2>
 
@@ -200,6 +206,24 @@
             <strong>⚠️ 踩坑故事：</strong>一个合作团队把所有错误都返回 200 + <code>{"code": 400, "message": "..."}</code> 的格式。我们的监控系统只检测 HTTP 5xx 状态码来触发告警，结果他们的 API 实际上一直在返回"系统繁忙"的错误，但监控面板上全是绿色——因为 HTTP 状态码是 200。等我们发现问题时，已经影响了整整两周的用户体验。这就是"不用状态码表达语义"的代价。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig08a-title fig08a-desc" viewBox="0 0 840 240" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig08a-title">HTTP 状态码的五个类别</title>
+                <desc id="fig08a-desc">1xx 信息、2xx 成功、3xx 重定向、4xx 客户端错误、5xx 服务端错误，并给出常见代表码。</desc>
+                <rect x="0" y="0" width="840" height="240" rx="16" fill="#f8fafc"/>
+                <text x="420" y="34" text-anchor="middle" font-size="18" fill="#1e3a5f">状态码先看首位：责任在客户端还是服务端（教学示意）</text>
+                <rect x="20" y="76" width="152" height="52" rx="10" fill="#e2e8f0" stroke="#cbd5e1"/><text x="96" y="108" text-anchor="middle" font-size="20" fill="#0f172a">1xx</text>
+                <rect x="180" y="76" width="152" height="52" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="256" y="108" text-anchor="middle" font-size="20" fill="#0f172a">2xx</text>
+                <rect x="340" y="76" width="152" height="52" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="416" y="108" text-anchor="middle" font-size="20" fill="#0f172a">3xx</text>
+                <rect x="500" y="76" width="152" height="52" rx="10" fill="#fef9c3" stroke="#fde047"/><text x="576" y="108" text-anchor="middle" font-size="20" fill="#0f172a">4xx</text>
+                <rect x="660" y="76" width="152" height="52" rx="10" fill="#fee2e2" stroke="#fca5a5"/><text x="736" y="108" text-anchor="middle" font-size="20" fill="#0f172a">5xx</text>
+                <g font-size="14" fill="#334155" text-anchor="middle"><text x="96" y="156">信息</text><text x="256" y="156">成功</text><text x="416" y="156">重定向</text><text x="576" y="156">客户端错误</text><text x="736" y="156">服务端错误</text></g>
+                <g font-size="12" fill="#64748b" text-anchor="middle"><text x="96" y="180">100 Continue</text><text x="256" y="180">200 / 201 / 204</text><text x="416" y="180">301 / 302 / 304</text><text x="576" y="180">400 / 401 / 404</text><text x="736" y="180">500 / 502 / 503</text></g>
+                <text x="420" y="212" text-anchor="middle" font-size="13" fill="#475569">4xx 应该归因于请求本身；5xx 才意味着服务端需要被叫醒</text>
+            </svg>
+            <figcaption>把状态码按首位归类，接口就能自描述：客户端只看类别就知该重试、该报错还是该踢回登录。429 属于 4xx，因为限流是对请求方行为的响应。</figcaption>
+        </figure>
+
         <h2>分页策略：Offset-based vs Cursor-based</h2>
 
         <p>几乎所有的列表接口都需要分页。不分页的接口在数据量小的时候没问题，一旦数据量涨到万级以上，一次返回所有数据就是灾难——不仅慢，而且占带宽。分页有两大主流方式：基于偏移量的分页（Offset-based）和基于游标的分页（Cursor-based）。</p>
@@ -314,7 +338,7 @@ async def get_order(order_id: int):
             <a href="index.html">📖 返回目录</a>
             <a href="09.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

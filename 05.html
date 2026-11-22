@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 5 章 · 编程语言选型</h1>
+            <p class="dek">没有最好的语言，只有最合适的场景。本章对比 Go / Java / Python / TypeScript 的生态位、并发模型与内存管理，并给出一套可操作的选型决策框架。</p>
+        </header>
 
         <h2>开篇：没有最好的语言，只有最合适的选择</h2>
 
@@ -189,6 +195,32 @@ async fn main() {
 
         <p>三种并发模型的哲学差异：<strong>goroutine 是"有栈协程"</strong>——每个 goroutine 有自己的栈，可以阻塞（如等待 I/O），Go 运行时自动在 goroutine 阻塞时将线程让给其他 goroutine。<strong>Java Virtual Threads 是"用户态线程"</strong>——设计哲学和 goroutine 非常相似，是 Java 在并发领域追赶 Go 的关键一步。<strong>Rust 的 async/await 是"无栈协程"</strong>——没有运行时、没有垃圾回收器，Future 是状态机，由编译器生成，零额外开销。三种模型在不同场景下各有千秋，没有绝对的高下。</p>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig05a-title fig05a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig05a-title">三种后端并发模型的对比</title>
+                <desc id="fig05a-desc">左侧为每请求一线程、中间为单线程事件循环、右侧为协程由运行时调度到少量 OS 线程。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">三种并发模型（教学示意）</text>
+                <g font-size="14" text-anchor="middle" fill="#1e3a5f"><text x="150" y="62">线程 / 每请求一线程</text><text x="420" y="62">事件循环 / 单线程异步</text><text x="690" y="62">协程 / 运行时调度</text></g>
+                <rect x="30" y="80" width="240" height="140" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="300" y="80" width="240" height="140" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="570" y="80" width="240" height="140" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="46" y="96" width="86" height="28" rx="8" fill="#dbeafe" stroke="#93c5fd"/><text x="89" y="115" font-size="13" text-anchor="middle">线程 1</text>
+                <rect x="46" y="130" width="86" height="28" rx="8" fill="#dbeafe" stroke="#93c5fd"/><text x="89" y="149" font-size="13" text-anchor="middle">线程 2</text>
+                <rect x="46" y="164" width="86" height="28" rx="8" fill="#fee2e2" stroke="#fca5a5"/><text x="89" y="183" font-size="13" text-anchor="middle">线程 3</text>
+                <text x="228" y="134" font-size="12" text-anchor="middle" fill="#b91c1c">I/O 阻塞时闲置</text>
+                <text x="228" y="158" font-size="12" text-anchor="middle" fill="#b91c1c">上下文切换贵</text>
+                <rect x="325" y="92" width="190" height="26" rx="8" fill="#dcfce7" stroke="#86efac"/><text x="420" y="110" font-size="12" text-anchor="middle">回调 / Promise 队列</text>
+                <rect x="345" y="126" width="150" height="58" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="420" y="150" font-size="14" text-anchor="middle">事件循环</text><text x="420" y="170" font-size="12" text-anchor="middle" fill="#475569">单线程轮询</text>
+                <text x="420" y="204" font-size="12" text-anchor="middle" fill="#475569">I/O 密集友好，CPU 密集易堵</text>
+                <rect x="590" y="96" width="92" height="74" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="636" y="128" font-size="13" text-anchor="middle">Goroutine</text><text x="636" y="148" font-size="12" text-anchor="middle" fill="#475569">成千上万</text>
+                <path d="M684 133 H710" stroke="#64748b" stroke-width="3"/><polygon points="710,127 718,133 710,139" fill="#64748b"/>
+                <rect x="720" y="96" width="76" height="74" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="758" y="128" font-size="13" text-anchor="middle">OS 线程</text><text x="758" y="148" font-size="12" text-anchor="middle" fill="#475569">少量</text>
+                <text x="700" y="192" font-size="12" text-anchor="middle" fill="#475569">调度器 M:N 复用</text>
+            </svg>
+            <figcaption>同一台机器上，三种模型对“等待 I/O”的处理不同：线程模型用更多线程接住等待，事件循环靠非阻塞回调，协程则把大量轻量任务复用到少量 OS 线程上。</figcaption>
+        </figure>
+
         <h2>内存管理：GC 调优 vs 所有权系统</h2>
 
         <p>内存管理方式深刻影响着后端服务的性能特征：</p>
@@ -287,7 +319,7 @@ async fn main() {
             <a href="index.html">📖 返回目录</a>
             <a href="06.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

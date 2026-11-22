@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 6 章 · 数据结构与算法实战</h1>
+            <p class="dek">算法不是面试题，而是生产环境的救命稻草。本章用哈希表、B+Tree、跳表与 LRU 淘汰策略，解释数据库索引与缓存背后的数据结构。</p>
+        </header>
 
         <h2>开篇：算法不是面试题，是生产环境的"救命稻草"</h2>
 
@@ -227,6 +233,28 @@ func (c *LRUCache) Put(key, value int) {
             <strong>⚠️ 踩坑实录：</strong>我们曾有一个 Redis 缓存大量用户会话数据的场景。上线时配置了 <code>allkeys-lru</code>，运行一段时间后发现活跃用户的会话频繁被淘汰，非活跃用户的会话反而一直留着。排查发现这是因为我们的数据访问模式是"周期性批量扫描"——后台定时任务每隔 5 分钟扫描一次全量用户数据，把每个用户的记录都 Get 了一遍，导致所有 key 在 LRU 视角下都变成了"最近使用过的"。解决方案是把淘汰策略换成 <code>allkeys-lfu</code>，因为批量扫描虽然会访问所有 key，但每个 key 的访问频率远低于实际活跃用户的频率。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig06a-title fig06a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig06a-title">LRU 缓存由哈希表与双向链表共同实现</title>
+                <desc id="fig06a-desc">哈希表以 O(1) 定位节点，双向链表按访问顺序排列，命中移到头部，淘汰从尾部删除。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">LRU 缓存：O(1) 查表 + O(1) 调整顺序（教学示意）</text>
+                <rect x="40" y="70" width="170" height="130" rx="12" fill="#fff" stroke="#93c5fd"/>
+                <text x="125" y="94" text-anchor="middle" font-size="14" fill="#1e3a5f">哈希表 key→节点</text>
+                <g font-size="13" fill="#334155"><text x="60" y="124">A → node#1</text><text x="60" y="152">B → node#2</text><text x="60" y="180">C → node#3</text></g>
+                <text x="243" y="142" text-anchor="middle" font-size="20" fill="#64748b">→</text>
+                <text x="375" y="66" text-anchor="middle" font-size="12" fill="#166534">最近使用（头部）</text>
+                <text x="675" y="66" text-anchor="middle" font-size="12" fill="#b91c1c">最久未用（尾部）</text>
+                <rect x="320" y="95" width="110" height="50" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="375" y="125" text-anchor="middle" font-size="14">node#3 C</text>
+                <rect x="470" y="95" width="110" height="50" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="525" y="125" text-anchor="middle" font-size="14">node#2 B</text>
+                <rect x="620" y="95" width="110" height="50" rx="10" fill="#fee2e2" stroke="#fca5a5"/><text x="675" y="125" text-anchor="middle" font-size="14">node#1 A</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M432 112 H468"/><path d="M582 112 H618"/><path d="M466 132 H432"/><path d="M616 132 H582"/></g>
+                <g fill="#64748b"><polygon points="462,106 470,112 462,118"/><polygon points="612,106 620,112 612,118"/><polygon points="438,126 430,132 438,138"/><polygon points="588,126 580,132 588,138"/></g>
+                <text x="470" y="186" text-anchor="middle" font-size="13" fill="#475569">命中：移到头部　｜　超容：删除尾部</text>
+            </svg>
+            <figcaption>哈希表把「找到节点」降到 O(1)，双向链表让「移到头部 / 删尾部」也是 O(1)。这个组合出现在进程内缓存、Redis 近似 LRU 策略与 MySQL Buffer Pool 中。</figcaption>
+        </figure>
+
         <h2>实战案例：用正确的数据结构把查询从 3 秒降到 3 毫秒</h2>
 
         <p>让我们看一个综合案例。假设你有一个电商后台系统，需要实现一个功能：根据用户的地理位置（经纬度）查询附近的商铺。</p>
@@ -249,7 +277,7 @@ func (c *LRUCache) Put(key, value int) {
             <a href="index.html">📖 返回目录</a>
             <a href="07.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
