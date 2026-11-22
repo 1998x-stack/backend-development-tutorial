@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 12 章 · 消息队列与事件驱动</h1>
+            <p class="dek">同步调用的尽头是消息队列。本章讲清队列与发布订阅模式、Kafka 的分区与消费者组、消息可靠性与幂等消费，以及事件驱动的两种演进路径。</p>
+        </header>
 
         <h2>开篇：同步调用的尽头是消息队列</h2>
 
@@ -147,6 +153,29 @@ func (h ConsumerHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sa
             <strong>🔑 Kafka 的核心权衡：</strong>Kafka 的"高吞吐"来自"顺序读写"+"批量处理"+"零拷贝"。但代价是消息的实时性不如 RabbitMQ（微秒级 vs 毫秒级），而且 Kafka 不适合小消息、低延迟的队列场景。"用 Kafka 还是 RabbitMQ"这个问题的本质是：你要的是吞吐还是延迟？
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig12a-title fig12a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig12a-title">Kafka 的生产者、分区与消费者组</title>
+                <desc id="fig12a-desc">生产者将消息写入 Topic 的不同分区，同一消费者组内一个分区只能被一个消费者消费。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">分区是并行的单区，消费者组是伸缩的单区（教学示意）</text>
+                <rect x="30" y="105" width="130" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="95" y="145" text-anchor="middle" font-size="15">生产者</text>
+                <rect x="240" y="55" width="340" height="180" rx="14" fill="#fff" stroke="#cbd5e1"/>
+                <text x="410" y="82" text-anchor="middle" font-size="14" fill="#1e3a5f">Topic：orders</text>
+                <rect x="265" y="100" width="290" height="46" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="410" y="128" text-anchor="middle" font-size="14">分区 P0　offset 单调递增</text>
+                <rect x="265" y="165" width="290" height="46" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="410" y="193" text-anchor="middle" font-size="14">分区 P1　offset 单调递增</text>
+                <rect x="630" y="55" width="180" height="180" rx="14" fill="#fff" stroke="#cbd5e1"/>
+                <text x="720" y="82" text-anchor="middle" font-size="14" fill="#1e3a5f">消费者组 G1</text>
+                <rect x="652" y="100" width="136" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="720" y="128" text-anchor="middle" font-size="14">消费者 A</text>
+                <rect x="652" y="165" width="136" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="720" y="193" text-anchor="middle" font-size="14">消费者 B</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M160 140 H230"/><path d="M555 123 H642"/><path d="M555 188 H642"/></g>
+                <g fill="#64748b"><polygon points="230,134 238,140 230,146"/><polygon points="642,117 650,123 642,129"/><polygon points="642,182 650,188 642,194"/></g>
+                <text x="195" y="130" text-anchor="middle" font-size="12" fill="#334155">发送</text>
+                <text x="420" y="252" text-anchor="middle" font-size="13" fill="#475569">同一分区只能被组内一个消费者消费；消费者数超过分区数时多出的会空闲</text>
+            </svg>
+            <figcaption>分区是 Kafka 并行度的上限，也是顺序性的边界：同一分区内消息有序，跨分区不保证。消费者组通过“一个分区只给一个消费者”实现伸缩与容错，扩容时触发重平衡。</figcaption>
+        </figure>
+
         <h2>消息可靠性：生产者确认、消费者 ACK、死信队列</h2>
 
         <p>使用消息队列之后，可靠性的关注点从"数据库不会丢数据"转移到了"消息不会丢"。消息在三个环节可能丢失：</p>
@@ -219,7 +248,7 @@ func ConsumeOrderCreated(msg Message) error {
             <a href="index.html">📖 返回目录</a>
             <a href="13.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

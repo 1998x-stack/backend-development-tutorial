@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 9 章 · 认证与授权体系</h1>
+            <p class="dek">认证回答“你是谁”，授权回答“你能做什么”。本章讲清 Session 与 Token 的取舍、JWT 结构与轮换、OAuth 2.0 授权码流程与 RBAC 权限模型。</p>
+        </header>
 
         <h2>开篇：认证≠授权——90%的安全事故源于混淆两者</h2>
 
@@ -146,6 +152,27 @@ Response:
         <div class="warning">
             <strong>⚠️ 一个常见的 JWT 误区：</strong>很多人以为 JWT 是"加密的"，所以把密码、手机号等敏感信息直接放在 Payload 里。但 JWT 的 Signature 只保证"未被篡改"，不保证"不可见"——Payload 只是 Base64 编码，任何人解码就能看到内容。绝对不要把密码明文放在 JWT 里。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig09a-title fig09a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig09a-title">JWT 由头部、载荷、签名三段组成</title>
+                <desc id="fig09a-desc">三段以点号分隔：头部声明算法，载荷携带声明，签名由前两段与密钥计算得出。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="17" fill="#1e3a5f">JWT = Base64Url(Header) · Base64Url(Payload) · Signature（教学示意）</text>
+                <rect x="30" y="72" width="240" height="110" rx="12" fill="#dbeafe" stroke="#93c5fd"/>
+                <rect x="300" y="72" width="240" height="110" rx="12" fill="#dcfce7" stroke="#86efac"/>
+                <rect x="570" y="72" width="240" height="110" rx="12" fill="#ede9fe" stroke="#c4b5fd"/>
+                <g text-anchor="middle"><text x="150" y="100" font-size="15" fill="#0f172a">Header</text></g>
+                <g text-anchor="middle" font-size="12" fill="#475569"><text x="150" y="126">{ "alg": "HS256",</text><text x="150" y="146">"typ": "JWT" }</text><text x="150" y="170" fill="#64748b">声明算法与类型</text></g>
+                <g text-anchor="middle"><text x="420" y="100" font-size="15" fill="#0f172a">Payload</text></g>
+                <g text-anchor="middle" font-size="12" fill="#475569"><text x="420" y="126">{ "sub": "1234",</text><text x="420" y="146">"exp": 1735689600 }</text><text x="420" y="170" fill="#64748b">声明身份与过期时间</text></g>
+                <g text-anchor="middle"><text x="690" y="100" font-size="15" fill="#0f172a">Signature</text></g>
+                <g text-anchor="middle" font-size="12" fill="#475569"><text x="690" y="126">HMAC(header</text><text x="690" y="146">.payload, secret)</text><text x="690" y="170" fill="#64748b">防篡改，不可伪造</text></g>
+                <g font-size="22" fill="#64748b" text-anchor="middle"><text x="285" y="132">·</text><text x="555" y="132">·</text></g>
+                <text x="420" y="212" text-anchor="middle" font-size="13" fill="#475569">签名保护前两段不被篡改；载荷只是 Base64 编码的明文，禁止存放敏感数据</text>
+            </svg>
+            <figcaption>JWT 的三个点号把令牌切成三段。服务端只用密钥校验签名，无需查库即可信任声明——但也意味着注销、改权限要及时靠密钥轮换与短过期时间。</figcaption>
+        </figure>
 
         <h2>OAuth 2.0 授权码流程详解</h2>
 
@@ -272,7 +299,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
             <a href="index.html">📖 返回目录</a>
             <a href="10.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

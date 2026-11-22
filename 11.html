@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 11 章 · NoSQL 与缓存策略</h1>
+            <p class="dek">关系型数据库不是银弹。本章讲清何时该选 NoSQL，用 Redis 数据结构与四大缓存模式搭起缓存层，并拆解穿透、击穿、雪崩三个经典坑。</p>
+        </header>
 
         <h2>开篇：关系型不是银弹——什么时候该选 NoSQL</h2>
 
@@ -146,6 +152,29 @@ XREADGROUP GROUP mygroup consumer1 COUNT 1 STREAMS mystream &gt;
         <div class="highlight">
             <strong>🧠 "先删缓存还是先写 DB" 的经典问题：</strong>推荐顺序是"先写 DB，再删缓存"。如果先删缓存然后写 DB 失败，缓存就缺了数据。如果先写 DB 再删缓存，在删缓存之前的瞬间可能有读请求把旧数据读到缓存里（概率极低），可以通过过期时间来兜底。这个模式被称为 "Cache-Aside with Lazy Deletion"。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig11a-title fig11a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig11a-title">Cache-Aside 缓存模式的读写路径</title>
+                <desc id="fig11a-desc">读时先查缓存、未命中再查数据库并回填；写时先更新数据库再删除缓存，避免脏数据。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">Cache-Aside：应用自己管缓存（教学示意）</text>
+                <rect x="40" y="90" width="160" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="120" y="130" text-anchor="middle" font-size="15">应用</text>
+                <rect x="340" y="90" width="160" height="70" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="420" y="130" text-anchor="middle" font-size="15">缓存 Redis</text>
+                <rect x="640" y="90" width="160" height="70" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/><text x="720" y="130" text-anchor="middle" font-size="15">数据库</text>
+                <g stroke="#64748b" stroke-width="3" fill="none">
+                    <path d="M200 106 H332"/><path d="M340 142 H208"/><path d="M500 106 H632"/><path d="M640 142 H508"/>
+                    <path d="M120 160 V216 H720 V160" stroke="#d06d4d" stroke-dasharray="6 5"/>
+                </g>
+                <g fill="#64748b"><polygon points="332,100 340,106 332,112"/><polygon points="208,136 200,142 208,148"/><polygon points="632,100 640,106 632,112"/><polygon points="508,136 500,142 508,148"/></g>
+                <g font-size="12" fill="#334155" text-anchor="middle">
+                    <text x="270" y="96">① 先查缓存</text><text x="270" y="170">命中 → 直接返回</text>
+                    <text x="570" y="96">② 未命中查库</text><text x="570" y="170">③ 回填缓存</text>
+                    <text x="420" y="236" fill="#a2432a">写：先更新数据库 → 再删除缓存 key</text>
+                </g>
+            </svg>
+            <figcaption>读路径追求命中率，写路径追求一致性：先改库、再删缓存（而不是改缓存），可避开并发写导致的脏数据。这是最常用也最容易落地的缓存模式。</figcaption>
+        </figure>
 
         <h2>缓存三大坑：穿透、击穿、雪崩</h2>
 
@@ -281,7 +310,7 @@ func ReleaseLock(redis *RedisClient, lockKey string, token string) {
             <a href="index.html">📖 返回目录</a>
             <a href="12.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
