@@ -278,20 +278,72 @@
             border-radius: 20px;
             margin: 1rem 0;
         }
+
+        .section-title {
+            font-size: 1.35rem;
+            color: #1f4d33;
+            border-left: 5px solid #7fc47c;
+            padding-left: 0.8rem;
+            margin: 1.6rem 0 1rem;
+        }
+
+        .course-intro {
+            line-height: 1.85;
+            color: #2d543a;
+            max-width: 56rem;
+            margin: 0 0 1rem;
+        }
+
+        main { display: block; }
+
+        .container figure {
+            margin: 1.4rem 0;
+            background: #ffffff;
+            border-color: rgba(210, 230, 200, 0.8);
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
+    <header class="header">
         <h1><span class="emoji"></span><span class="title-text"></span></h1>
         <div class="sub"></div>
-    </div>
+    </header>
 
-    <div id="cardContainer" class="course-grid"></div>
+    <main>
+    <figure>
+        <svg role="img" aria-labelledby="idx-title idx-desc" viewBox="0 0 840 300" xmlns="http://www.w3.org/2000/svg">
+            <title id="idx-title">28 章课程的六个学习阶段</title>
+            <desc id="idx-desc">Part 1 到 Part 6，从基础基石、API 与数据、质量与安全，到容器与编排、运维与进阶、前沿与实战。</desc>
+            <rect x="0" y="0" width="840" height="300" rx="16" fill="#f8fafc"/>
+            <text x="420" y="34" text-anchor="middle" font-size="18" fill="#1e3a5f">一条从开发到部署的学习路径（教学示意）</text>
+            <g font-size="13" text-anchor="middle">
+                <rect x="30" y="70" width="240" height="80" rx="12" fill="#f7b07a" stroke="#e0904f"/><text x="150" y="102" fill="#3d2e1a">Part 1 · 基础基石</text><text x="150" y="126" fill="#3d2e1a">01 - 07</text>
+                <rect x="300" y="70" width="240" height="80" rx="12" fill="#a7d4a0" stroke="#7fb877"/><text x="420" y="102" fill="#1f452b">Part 2 · API 与数据</text><text x="420" y="126" fill="#1f452b">08 - 14</text>
+                <rect x="570" y="70" width="240" height="80" rx="12" fill="#f5d44a" stroke="#dbb42c"/><text x="690" y="102" fill="#2f4d2a">Part 3 · 质量与安全</text><text x="690" y="126" fill="#2f4d2a">15 - 18</text>
+                <rect x="570" y="180" width="240" height="80" rx="12" fill="#b3d9e8" stroke="#7fb8cd"/><text x="690" y="212" fill="#1a3f4a">Part 4 · 容器与编排</text><text x="690" y="236" fill="#1a3f4a">19 - 22</text>
+                <rect x="300" y="180" width="240" height="80" rx="12" fill="#f7c6c6" stroke="#dd9b9b"/><text x="420" y="212" fill="#5a2e2e">Part 5 · 运维与进阶</text><text x="420" y="236" fill="#5a2e2e">23 - 25</text>
+                <rect x="30" y="180" width="240" height="80" rx="12" fill="#c4b3e0" stroke="#9c8ac0"/><text x="150" y="212" fill="#2f2a4a">Part 6 · 前沿与实战</text><text x="150" y="236" fill="#2f2a4a">26 - 28</text>
+            </g>
+            <g stroke="#64748b" stroke-width="3" fill="none"><path d="M270 110 H292"/><path d="M540 110 H562"/><path d="M690 150 V172"/><path d="M570 220 H548"/><path d="M300 220 H278"/></g>
+            <g fill="#64748b"><polygon points="292,104 300,110 292,116"/><polygon points="562,104 570,110 562,116"/><polygon points="684,172 690,180 696,172"/><polygon points="548,214 540,220 548,226"/><polygon points="278,214 270,220 278,226"/></g>
+            <text x="420" y="290" text-anchor="middle" font-size="12" fill="#64748b">建议至少完整过一遍 Part 1，后续章节默认你已掌握基础工具</text>
+        </svg>
+        <figcaption>课程不是知识点的罗列，而是一条“先会造、再会管、最后会演进”的路径：基础 → 数据 → 质量 → 容器 → 运维 → 前沿。可从头学到尾，也可按当前工作重点跳读。</figcaption>
+    </figure>
+
+    <h2 class="section-title">课程目录</h2>
+
+    <nav id="cardContainer" class="course-grid" aria-label="课程目录"></nav>
+
+    <h2 class="section-title">如何使用本课程</h2>
+
+    <p class="course-intro">28 章按 Part 1→6 递进：先理解后端全景与基础工具，再深入 API 与数据层，然后建立质量与安全体系，最后进入容器、编排与云原生前沿。每章都以“原理 → 图示 → 工程实践”组织，建议对照目录按需跳读，并至少完整过一遍 Part 1。</p>
 
     <div style="text-align:center;">
         <div class="footer"></div>
     </div>
+    </main>
 </div>
 
 <script>
