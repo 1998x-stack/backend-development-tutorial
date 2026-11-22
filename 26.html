@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 26 章 · AI 驱动的后端开发</h1>
+            <p class="dek">每个后端都需要一点 AI 素养。本章讲 LLM API 集成、RAG 架构、向量数据库选型，以及 Prompt 缓存与成本优化。</p>
+        </header>
 
         <h2>开篇：2026 年，每个后端都需要"AI 素养"</h2>
 
@@ -201,6 +207,24 @@ print(result["result"])</code></pre>
         <div class="highlight">
             <strong>关键经验：</strong>很多人以为 RAG 的瓶颈在 LLM 的质量，但实际上<strong>检索质量才是 RAG 的天花板</strong>。如果检索回来的 Chunk 和问题不相关，再强的模型也答不好。投入精力优化 Embedding 模型的选择、Chunk 切分策略和检索的 reranking，回报远超换一个更大参数的 LLM。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig26a-title fig26a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig26a-title">RAG 的检索增强生成流程</title>
+                <desc id="fig26a-desc">用户问题先转向量，在向量库中检索最相关的片段，拼接进提示词后交给 LLM 生成回答。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">RAG：先生检索，再让 LLM 作答（教学示意）</text>
+                <rect x="25" y="90" width="135" height="70" rx="10" fill="#dbeafe" stroke="#93c5fd"/><text x="92" y="130" text-anchor="middle" font-size="13">用户问题</text>
+                <rect x="190" y="90" width="135" height="70" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="257" y="121" text-anchor="middle" font-size="13">Embedding</text><text x="257" y="143" text-anchor="middle" font-size="12" fill="#475569">文本 → 向量</text>
+                <rect x="355" y="90" width="135" height="70" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="422" y="121" text-anchor="middle" font-size="13">向量检索</text><text x="422" y="143" text-anchor="middle" font-size="12" fill="#475569">Top-k 相关片段</text>
+                <rect x="520" y="90" width="135" height="70" rx="10" fill="#fef9c3" stroke="#fde047"/><text x="587" y="121" text-anchor="middle" font-size="13">Prompt 组装</text><text x="587" y="143" text-anchor="middle" font-size="12" fill="#475569">问题 + 上下文</text>
+                <rect x="685" y="90" width="135" height="70" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="752" y="121" text-anchor="middle" font-size="13">LLM 生成</text><text x="752" y="143" text-anchor="middle" font-size="12" fill="#475569">带引用的回答</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M160 125 H182"/><path d="M325 125 H347"/><path d="M490 125 H512"/><path d="M655 125 H677"/></g>
+                <g fill="#64748b"><polygon points="182,119 190,125 182,131"/><polygon points="347,119 355,125 347,131"/><polygon points="512,119 520,125 512,131"/><polygon points="677,119 685,125 677,131"/></g>
+                <text x="420" y="190" text-anchor="middle" font-size="12" fill="#64748b">文档预先切块、转向量后入库；检索质量往往比模型大小更影响最终效果</text>
+            </svg>
+            <figcaption>RAG 把“模型的知识”换成“检索到的上下文”，因此能引用最新、私有资料。它不改变模型权重，但能显著降低幻觉与过期知识的问题。</figcaption>
+        </figure>
 
         <h2>向量数据库选型</h2>
 
@@ -395,7 +419,7 @@ async function compressHistory(messages) {
             <a href="index.html">📖 返回目录</a>
             <a href="27.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html" class="active">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 27 章 · 云原生前沿技术</h1>
+            <p class="dek">今天的前沿，明天的标配。本章讲服务端 WebAssembly、Dapr 侧车框架、供应链安全（SLSA / SBOM / 签名），以及平台工程。</p>
+        </header>
 
         <h2>开篇：今天的前沿，明天的标配</h2>
 
@@ -307,6 +313,25 @@ cosign verify your-registry/app:latest \
 
         <p>我的建议是：至少做到 SLSA L2。在 CI 中对每个构建产物生成 SBOM、用 Cosign 签名、将 SBOM 存储在 OCI Registry 中。这在 2026 年已经不是"额外工作"了——很多合规框架（如 SOC 2、ISO 27001）已经明确要求 SBOM。早做早安全。</p>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig27a-title fig27a-desc" viewBox="0 0 840 220" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig27a-title">软件供应链的构建与验证链路</title>
+                <desc id="fig27a-desc">从源码与依赖出发，经构建生成 SBOM 并签名，部署时校验签名与清单，任一环篡改都会被拦下。</desc>
+                <rect x="0" y="0" width="840" height="220" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">供应链安全：每一步都可验证（教学示意）</text>
+                <rect x="30" y="86" width="120" height="60" rx="10" fill="#dbeafe" stroke="#93c5fd"/><text x="90" y="121" text-anchor="middle" font-size="13">源码</text>
+                <rect x="165" y="86" width="120" height="60" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/><text x="225" y="121" text-anchor="middle" font-size="13">依赖清单</text>
+                <rect x="300" y="86" width="120" height="60" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="360" y="121" text-anchor="middle" font-size="13">构建</text>
+                <rect x="435" y="86" width="120" height="60" rx="10" fill="#fef9c3" stroke="#fde047"/><text x="495" y="121" text-anchor="middle" font-size="13">SBOM</text>
+                <rect x="570" y="86" width="120" height="60" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="630" y="121" text-anchor="middle" font-size="13">签名</text>
+                <rect x="705" y="86" width="110" height="60" rx="10" fill="#fee2e2" stroke="#fca5a5"/><text x="760" y="121" text-anchor="middle" font-size="13">部署校验</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M150 116 H157"/><path d="M285 116 H292"/><path d="M420 116 H427"/><path d="M555 116 H562"/><path d="M690 116 H697"/></g>
+                <g fill="#64748b"><polygon points="157,110 165,116 157,122"/><polygon points="292,110 300,116 292,122"/><polygon points="427,110 435,116 427,122"/><polygon points="562,110 570,116 562,122"/><polygon points="697,110 705,116 697,122"/></g>
+                <text x="420" y="190" text-anchor="middle" font-size="12" fill="#64748b">SLSA 定级记录构建过程的可信度；SBOM 让漏洞能被快速定位到具体组件</text>
+            </svg>
+            <figcaption>供应链攻击往往不攻源码，而攻依赖或构建环节。用 SBOM 说清“里面有什么”、用签名说清“是不是我构建的”、用部署校验说清“有没有被换过”。</figcaption>
+        </figure>
+
         <h2>eBPF 深度应用：零侵入的可观测性与网络策略</h2>
 
         <p>eBPF（extended Berkeley Packet Filter）是 Linux 内核的一颗"核弹级"特性——它允许你在不修改内核代码、不加载内核模块的前提下，在内核中运行沙箱化的用户程序。这意味着你可以"实时编程"内核的行为。</p>
@@ -381,7 +406,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="28.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

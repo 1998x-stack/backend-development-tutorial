@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html" class="active">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 28 章 · 综合实战项目</h1>
+            <p class="dek">学完 28 章，来交一次作业。本章把一个电商后端从需求、拆分、容器化、CI/CD 到可观测性完整地串起来。</p>
+        </header>
 
         <h2>开篇：学完 28 章，我们来"交作业"</h2>
 
@@ -167,6 +173,22 @@
         <div class="warning">
             <strong>血泪教训：</strong>我见过一个团队在微服务上线半年后，因为"跨服务查数据太麻烦"而在订单服务中直接连接了用户数据库。三个月后用户库做了分库分表，订单服务直接宕机了两天。记住：<strong>微服务之间共享数据库就是回到单体</strong>——所有的好处（独立部署、独立扩展、独立技术栈）全都没了。如果跨服务查询很频繁，考虑通过事件同步一份"只读副本"或使用 CQRS 模式。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig28a-title fig28a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig28a-title">综合实战项目的微服务架构</title>
+                <desc id="fig28a-desc">客户端经 API 网关访问订单、用户、支付等服务，服务依赖数据库、消息队列与缓存。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">课程综合项目的分层架构（教学示意）</text>
+                <rect x="30" y="105" width="130" height="60" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="95" y="140" text-anchor="middle" font-size="13">客户端</text>
+                <rect x="200" y="95" width="140" height="80" rx="12" fill="#e0f2fe" stroke="#7dd3fc"/><text x="270" y="128" text-anchor="middle" font-size="13">API 网关</text><text x="270" y="150" text-anchor="middle" font-size="12" fill="#475569">鉴权 / 路由 / 限流</text>
+                <g font-size="13"><rect x="400" y="48" width="150" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="475" y="76" text-anchor="middle">订单服务</text><rect x="400" y="112" width="150" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="475" y="140" text-anchor="middle">用户服务</text><rect x="400" y="176" width="150" height="46" rx="10" fill="#dcfce7" stroke="#86efac"/><text x="475" y="204" text-anchor="middle">支付服务</text></g>
+                <g font-size="13"><rect x="640" y="48" width="170" height="46" rx="10" fill="#fef9c3" stroke="#fde047"/><text x="725" y="76" text-anchor="middle">数据库（主从）</text><rect x="640" y="112" width="170" height="46" rx="10" fill="#ede9fe" stroke="#c4b5fd"/><text x="725" y="140" text-anchor="middle">消息队列</text><rect x="640" y="176" width="170" height="46" rx="10" fill="#e2e8f0" stroke="#cbd5e1"/><text x="725" y="204" text-anchor="middle">Redis 缓存</text></g>
+                <g stroke="#64748b" stroke-width="2" fill="none"><path d="M160 135 H192"/><path d="M340 135 L392 71"/><path d="M340 135 H392"/><path d="M340 135 L392 199"/><path d="M550 71 H632"/><path d="M550 135 H632"/><path d="M550 199 H632"/></g>
+                <text x="420" y="246" text-anchor="middle" font-size="12" fill="#64748b">服务之间通过事件（消息队列）解耦，热点数据放缓存，数据落地到数据库</text>
+            </svg>
+            <figcaption>这是把前 27 章全部拼起来的一张图：网关收敛入口，服务按业务拆分，数据库、消息队列、缓存各司其职。拆得越细，可观测性与一致性就越重要。</figcaption>
+        </figure>
 
         <h2>容器化与编排：Docker multi-stage build + K8s Manifest</h2>
 
@@ -427,7 +449,7 @@ func GetCourseDetail(ctx context.Context, courseID string) (*Course, error) {
             <a href="index.html">📖 返回目录</a>
             <a href="javascript:void(0)">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

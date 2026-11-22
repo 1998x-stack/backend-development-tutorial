@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 25 章 · Serverless 与 FaaS</h1>
+            <p class="dek">没有服务器，并不意味着没有问题。本章讲清 FaaS / BaaS / 事件驱动、Lambda 实战、冷启动优化与 Serverless 的隐藏成本。</p>
+        </header>
 
         <h2>开篇：没有服务器，并不意味着没有问题</h2>
 
@@ -311,6 +317,25 @@ resources:
             <strong>关键认知：</strong>冷启动不是一定要解决的"问题"——它是一个需要管理的"特性"。很多场景下，函数偶尔一次 1-2 秒的冷启动对用户体验没有实质影响（比如后台异步处理、定时任务、非关键 API）。不要为了消除冷启动而引入比冷启动本身更大的复杂性。衡量、容忍、按需优化。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig25a-title fig25a-desc" viewBox="0 0 840 220" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig25a-title">冷启动与热启动的耗时对比</title>
+                <desc id="fig25a-desc">冷启动需先下载代码并初始化运行时再执行，热启动直接执行已有实例。</desc>
+                <rect x="0" y="0" width="840" height="220" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">冷启动多出的两段开销（教学示意）</text>
+                <text x="180" y="105" text-anchor="end" font-size="13" fill="#0f172a">冷启动</text>
+                <text x="180" y="165" text-anchor="end" font-size="13" fill="#0f172a">热启动</text>
+                <rect x="200" y="86" width="120" height="38" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/><text x="260" y="110" text-anchor="middle" font-size="12">下载代码</text>
+                <rect x="320" y="86" width="180" height="38" rx="8" fill="#fef9c3" stroke="#fde047"/><text x="410" y="110" text-anchor="middle" font-size="12">初始化运行时</text>
+                <rect x="500" y="86" width="120" height="38" rx="8" fill="#dcfce7" stroke="#86efac"/><text x="560" y="110" text-anchor="middle" font-size="12">执行</text>
+                <rect x="200" y="146" width="120" height="38" rx="8" fill="#dcfce7" stroke="#86efac"/><text x="260" y="170" text-anchor="middle" font-size="12">执行</text>
+                <text x="640" y="110" font-size="12" fill="#b91c1c">额外 100ms ~ 数秒</text>
+                <text x="640" y="170" font-size="12" fill="#166534">仅执行耗时</text>
+                <text x="420" y="206" text-anchor="middle" font-size="12" fill="#64748b">预留并发（常年保热）与快照恢复（SnapStart）可抹平冷启动</text>
+            </svg>
+            <figcaption>冷启动的额外延迟来自“下载”与“初始化运行时”两段。对延迟敏感的接口，用预留并发保持热实例，或靠 SnapStart 预置初始化好的快照。</figcaption>
+        </figure>
+
         <h2>Knative：在 K8s 上运行 Serverless 工作负载</h2>
 
         <p>如果你已经深度绑定 K8s，但还想享受 Serverless 的"从零自动伸缩"的便利，怎么办？这就是 <strong>Knative</strong> 解决的问题。Knative 是 Google 发起的开源项目，在 K8s 之上提供 Serverless 能力。它的核心理念是：<strong>用 K8s 的 API 表达 Serverless 的语义</strong>。</p>
@@ -456,7 +481,7 @@ spec:
             <a href="index.html">📖 返回目录</a>
             <a href="26.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
