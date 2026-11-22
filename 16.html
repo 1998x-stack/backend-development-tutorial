@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 16 章 · 安全攻防实战</h1>
+            <p class="dek">安全不是需求，而是属性。本章从 OWASP Top 10 出发，拆解 SQL 注入、XSS 与 CSRF 的原理与防护，再讲认证安全与供应链风险。</p>
+        </header>
 
         <h2>开篇：安全不是功能，是属性——一个真实的数据泄露案例</h2>
 
@@ -230,6 +236,23 @@ set-cookie: session_id=abc123; SameSite=Lax; Secure; HttpOnly
             <strong>🔑 关键区别：</strong>XSS 攻击的是"用户对网站的信任"（网站被注入了恶意代码），CSRF 攻击的是"网站对用户浏览器的信任"（浏览器帮你发了恶意请求）。<strong>SameSite Cookie 可以防 CSRF，但不能防 XSS</strong>——XSS 一旦得手，攻击者可以在页面中自由操作，包括读取 Cookie、发起任意请求。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig16a-title fig16a-desc" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig16a-title">不可信输入要过的三道防线</title>
+                <desc id="fig16a-desc">不可信输入依次经过输入校验、参数化查询与转义、输出编码三道闸门，分别拦截越界、SQL 注入与 XSS。</desc>
+                <rect x="0" y="0" width="840" height="230" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">不可信输入要过三道闸门（教学示意）</text>
+                <rect x="30" y="80" width="170" height="70" rx="12" fill="#fee2e2" stroke="#fca5a5"/><text x="115" y="120" text-anchor="middle" font-size="14">不可信输入</text>
+                <rect x="240" y="80" width="170" height="70" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="325" y="112" text-anchor="middle" font-size="13">① 输入校验 / 白名单</text><text x="325" y="134" text-anchor="middle" font-size="12" fill="#475569">挡越界与类型混淆</text>
+                <rect x="450" y="80" width="170" height="70" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="535" y="112" text-anchor="middle" font-size="13">② 参数化 / 转义</text><text x="535" y="134" text-anchor="middle" font-size="12" fill="#475569">挡 SQL 注入</text>
+                <rect x="660" y="80" width="170" height="70" rx="12" fill="#ede9fe" stroke="#c4b5fd"/><text x="745" y="112" text-anchor="middle" font-size="13">③ 输出编码 + CSP</text><text x="745" y="134" text-anchor="middle" font-size="12" fill="#475569">挡 XSS</text>
+                <g stroke="#64748b" stroke-width="3" fill="none"><path d="M200 115 H232"/><path d="M410 115 H442"/><path d="M620 115 H652"/></g>
+                <g fill="#64748b"><polygon points="232,109 240,115 232,121"/><polygon points="442,109 450,115 442,121"/><polygon points="652,109 660,115 652,121"/></g>
+                <text x="420" y="196" text-anchor="middle" font-size="13" fill="#475569">每层只解决一类问题：把它们堆叠，而不是指望单点捣住全部攻击</text>
+            </svg>
+            <figcaption>SQL 注入靠参数化查询（而非字符串拼接）防范，XSS 靠输出编码与 CSP，CSRF 靠 SameSite Cookie 与 CSRF Token。三道防线各自独立，不能相互替代。</figcaption>
+        </figure>
+
         <h2>认证安全：密码哈希、MFA、会话管理</h2>
 
         <p>认证是后端安全的第一道门。很多系统被攻破不是因为黑客有多厉害，而是因为"门锁质量太差"——密码明文存储、弱密码策略、没有多因素认证。下面是最关键的三个实践。</p>
@@ -339,7 +362,7 @@ cyclonedx-gomod mod -json -main -o bom.json</code></pre>
             <a href="index.html">📖 返回目录</a>
             <a href="17.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 15 章 · 测试策略与质量保障</h1>
+            <p class="dek">测试不是负担，而是让你睡好觉的保险。本章用测试金字塔安排投入，讲清单元、集成、E2E 的边界，以及 TDD 与覆盖率的常见陷阱。</p>
+        </header>
 
         <h2>开篇：测试不是负担，是让你睡好觉的保险</h2>
 
@@ -113,6 +119,25 @@
         <div class="tip">
             <strong>💡 黄金法则：</strong>写测试的时候，先问自己"这个测试失败时，能告诉我哪里出问题了吗？"如果你的答案是"大概知道是哪个模块"或者"不确定"，说明这个测试的粒度太粗了。把它拆小一点。
         </div>
+
+        <figure>
+            <svg role="img" aria-labelledby="fig15a-title fig15a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig15a-title">测试金字塔</title>
+                <desc id="fig15a-desc">自下而上为单元测试、集成测试、端到端测试，越靠下数量越多、运行越快、成本越低。</desc>
+                <rect x="0" y="0" width="840" height="260" rx="16" fill="#f8fafc"/>
+                <text x="420" y="30" text-anchor="middle" font-size="18" fill="#1e3a5f">测试金字塔：投入与回报的分布（教学示意）</text>
+                <rect x="330" y="52" width="180" height="48" rx="10" fill="#fee2e2" stroke="#fca5a5"/>
+                <rect x="250" y="112" width="340" height="48" rx="10" fill="#fef9c3" stroke="#fde047"/>
+                <rect x="150" y="172" width="540" height="54" rx="10" fill="#dcfce7" stroke="#86efac"/>
+                <text x="420" y="82" text-anchor="middle" font-size="14" fill="#0f172a">E2E 端到端（少量）</text>
+                <text x="420" y="142" text-anchor="middle" font-size="14" fill="#0f172a">集成测试</text>
+                <text x="420" y="205" text-anchor="middle" font-size="14" fill="#0f172a">单元测试（最多、最快）</text>
+                <text x="720" y="82" text-anchor="middle" font-size="12" fill="#b91c1c">慢 · 脆 · 贵</text>
+                <text x="720" y="142" text-anchor="middle" font-size="12" fill="#475569">中</text>
+                <text x="420" y="248" text-anchor="middle" font-size="13" fill="#166534">越靠下越该多写：快、稳、便宜、定位精准</text>
+            </svg>
+            <figcaption>金字塔不是教条比例，而是一条成本曲线：单元测试最快最稳，E2E 最接近用户但最慢最脆。把大量验证下沉到下层，只把关键路径留给 E2E。</figcaption>
+        </figure>
 
         <h2>单元测试最佳实践：AAA 模式与测试替身</h2>
 
@@ -333,7 +358,7 @@ func ValidatePassword(pwd string) error {
             <a href="index.html">📖 返回目录</a>
             <a href="16.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

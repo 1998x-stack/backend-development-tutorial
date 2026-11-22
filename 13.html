@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 13 章 · gRPC 与微服务通信</h1>
+            <p class="dek">当 REST 不够快，gRPC 带来了 Protobuf 与 HTTP/2 上的四种调用模式。本章拆解序列化原理、四种 RPC 模式与服务发现与负载均衡。</p>
+        </header>
 
         <h2>开篇：当 REST 不够快——gRPC 的诞生</h2>
 
@@ -199,6 +205,24 @@ for {
 }
 </code></pre>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig13a-title fig13a-desc" viewBox="0 0 840 250" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig13a-title">gRPC 的四种调用模式</title>
+                <desc id="fig13a-desc">一元、服务端流、客户端流、双向流四种模式，用 1 或 N 表示每次交互的消息数量。</desc>
+                <rect x="0" y="0" width="840" height="250" rx="16" fill="#f8fafc"/>
+                <text x="420" y="32" text-anchor="middle" font-size="18" fill="#1e3a5f">四种 RPC 模式：请求与响应各自可多可少（教学示意）</text>
+                <rect x="20" y="60" width="180" height="160" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="220" y="60" width="180" height="160" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="420" y="60" width="180" height="160" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <rect x="620" y="60" width="180" height="160" rx="12" fill="#fff" stroke="#cbd5e1"/>
+                <g font-size="14" text-anchor="middle" fill="#1e3a5f"><text x="110" y="88">Unary RPC</text><text x="310" y="88">Server Streaming</text><text x="510" y="88">Client Streaming</text><text x="710" y="88">Bidirectional</text></g>
+                <g font-size="26" text-anchor="middle" fill="#0f172a"><text x="110" y="150">1 → 1</text><text x="310" y="150">1 → N</text><text x="510" y="150">N → 1</text><text x="710" y="150">N ↔ N</text></g>
+                <g font-size="12" text-anchor="middle" fill="#475569"><text x="110" y="186">一问一答</text><text x="310" y="186">服务端持续推送</text><text x="510" y="186">客户端批量上报</text><text x="710" y="186">双向实时流</text></g>
+                <text x="420" y="240" text-anchor="middle" font-size="13" fill="#475569">流式连接复用同一 HTTP/2 连接，适合推送、大文件与实时对话</text>
+            </svg>
+            <figcaption>四种模式不是四个 API，而是同一套 .proto 服务定义里不同方法的形状。服务端流常用于订阅推送，双向流适合实时语音/协作，一元调用则与 REST 手感最接近。</figcaption>
+        </figure>
+
         <h2>gRPC vs REST 性能对比</h2>
 
         <p>很多人关心 gRPC 到底比 REST 快多少。但这个问题的答案取决于你的场景。下面是一组典型的基准测试数据（服务间通信、相同硬件、相同网络环境）：</p>
@@ -331,7 +355,7 @@ order, _ := client.GetOrder(ctx, &pb.GetOrderRequest{OrderId: "ORD123"})
             <a href="index.html">📖 返回目录</a>
             <a href="14.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>

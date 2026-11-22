@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
+<a class="skip-link" href="#content">跳转至正文</a>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🖥️ 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 后端开发全景图</a></li>
@@ -41,8 +42,13 @@
             <li><a href="27.html">第27章 云原生前沿技术</a></li>
             <li><a href="28.html">第28章 综合实战项目</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content" id="content">
+
+        <header class="article-header">
+            <h1>第 14 章 · GraphQL 与 BFF 模式</h1>
+            <p class="dek">当接口返回的字段不再刚需，GraphQL 让客户端自己描述需要的数据。本章讲 Schema 与解析器、N+1 与 DataLoader、场景选择，以及 BFF 分层。</p>
+        </header>
 
         <h2>开篇：前端说"这个接口返回太多无用数据了"</h2>
 
@@ -189,6 +195,28 @@ const resolvers = {
             <strong>⚠️ 踩坑故事：</strong>团队第一次上线 GraphQL 服务时，没有用 DataLoader。首页一个请求返回了 20 篇文章，每篇文章的评论数、作者信息、标签都需要单独查询。结果一个页面加载触发了 200+ 次数据库查询，数据库连接池直接被打满。加上 DataLoader 后，200+ 次查询减少到了 5 次。DataLoader 不是"可选的优化"，而是<strong>GraphQL 生产环境部署的必须组件</strong>。
         </div>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig14a-title fig14a-desc" viewBox="0 0 840 250" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig14a-title">N+1 查询与 DataLoader 批处理对比</title>
+                <desc id="fig14a-desc">朴素解析器先查一次 posts，再对每篇文章各查一次作者；DataLoader 把作者查询合并成一次 IN 批量查询。</desc>
+                <rect x="0" y="0" width="840" height="250" rx="16" fill="#f8fafc"/>
+                <text x="420" y="30" text-anchor="middle" font-size="18" fill="#1e3a5f">N+1 查询 vs DataLoader 批处理（教学示意）</text>
+                <rect x="30" y="52" width="370" height="170" rx="14" fill="#fff" stroke="#fca5a5"/>
+                <text x="215" y="78" text-anchor="middle" font-size="14" fill="#b91c1c">朴素解析器：1 + N 次查询</text>
+                <rect x="55" y="96" width="150" height="40" rx="9" fill="#fee2e2" stroke="#fca5a5"/><text x="130" y="121" text-anchor="middle" font-size="13">1 次查 posts</text>
+                <g stroke="#64748b" stroke-width="2" fill="none"><path d="M205 116 L250 106"/><path d="M205 116 L250 136"/><path d="M205 116 L250 166"/></g>
+                <g font-size="12"><rect x="255" y="92" width="125" height="28" rx="8" fill="#fff" stroke="#fca5a5"/><text x="317" y="111" text-anchor="middle">查 author#1</text><rect x="255" y="122" width="125" height="28" rx="8" fill="#fff" stroke="#fca5a5"/><text x="317" y="141" text-anchor="middle">查 author#2</text><rect x="255" y="152" width="125" height="28" rx="8" fill="#fff" stroke="#fca5a5"/><text x="317" y="171" text-anchor="middle">查 author#3</text></g>
+                <rect x="440" y="52" width="370" height="170" rx="14" fill="#fff" stroke="#86efac"/>
+                <text x="625" y="78" text-anchor="middle" font-size="14" fill="#166534">DataLoader：1 + 1 次查询</text>
+                <rect x="465" y="100" width="150" height="40" rx="9" fill="#dcfce7" stroke="#86efac"/><text x="540" y="125" text-anchor="middle" font-size="13">1 次查 posts</text>
+                <path d="M615 120 H650" stroke="#64748b" stroke-width="2"/><polygon points="650,114 658,120 650,126" fill="#64748b"/>
+                <rect x="658" y="94" width="135" height="52" rx="9" fill="#dcfce7" stroke="#86efac"/><text x="725" y="116" text-anchor="middle" font-size="12">1 次 IN</text><text x="725" y="134" text-anchor="middle" font-size="12">批量查 authors</text>
+                <text x="625" y="185" text-anchor="middle" font-size="12" fill="#475569">同一事件循环内的请求被合并</text>
+                <text x="420" y="240" text-anchor="middle" font-size="13" fill="#475569">N 个字段就是 N+1 次往返；批处理把网络往返降到常数级</text>
+            </svg>
+            <figcaption>N+1 的根源是“每个解析器各自发一次查询”。DataLoader 把同一 tick 内的请求排队，合并成一次 IN 查询并缓存回填，把总分从 1+N 降到 2。</figcaption>
+        </figure>
+
         <h2>GraphQL vs REST 场景选择</h2>
 
         <p>GraphQL 和 REST 不是替代关系，而是互补关系。GraphQL 在以下场景中优势明显：客户端多样（多种前端、移动端）、数据视图差异大、前端迭代速度快。REST 在以下场景中仍然不可替代：简单的 CRUD 接口、缓存策略（HTTP 缓存天然适配 REST）、文件上传、日志和监控的便利性。</p>
@@ -310,7 +338,7 @@ query {
             <a href="index.html">📖 返回目录</a>
             <a href="15.html">下一章 →</a>
         </div>
-    </div>
+    </main>
 </div>
 </div>
 </body>
