@@ -355,6 +355,48 @@ Response:
             <figcaption>JWT 的三个点号把令牌切成三段。服务端只用密钥校验签名，无需查库即可信任声明——但也意味着注销、改权限要及时靠密钥轮换与短过期时间。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>下方令牌由本页在浏览器内按真实 JWT 规则拼出（HS256、Base64URL）。点击按钮查看各段解码内容，再试试「篡改 role」——载荷变了、签名段没变，服务端重算签名就会发现不匹配。演示全程本地运行，签名段为占位值。
+        </div>
+
+        <div class="control-row" role="group" aria-label="JWT 解码演示">
+            <button type="button" data-jwt="header" aria-pressed="false">解码 Header</button>
+            <button type="button" data-jwt="payload" aria-pressed="false">解码 Payload</button>
+            <button type="button" data-jwt-tamper>篡改 role → admin</button>
+            <button type="button" data-jwt-reset>重置</button>
+        </div>
+        <p class="status" id="jwt-status" aria-live="polite">载入中…</p>
+        <script>
+        (function () {
+            var out = document.getElementById('jwt-status');
+            var header = { alg: 'HS256', typ: 'JWT' };
+            var base = { sub: 'user_12345', role: 'user', exp: 1751603600 };
+            var payload = JSON.parse(JSON.stringify(base));
+            var sig = 'ZmFrZV9zaWduYXR1cmU';
+            function b64url(o) { return btoa(JSON.stringify(o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+            function token() { return b64url(header) + '.' + b64url(payload) + '.' + sig; }
+            function show(msg) { out.textContent = msg; }
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-jwt]'));
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    var n = b.getAttribute('data-jwt');
+                    show('解码 ' + n + '：' + JSON.stringify(n === 'header' ? header : payload));
+                });
+            });
+            document.querySelector('[data-jwt-tamper]').addEventListener('click', function () {
+                payload.role = 'admin';
+                show('已把 payload.role 改为 admin。当前令牌：' + token() + ' —— 三段中只有第二段变了，签名段未变；服务端用密钥重算签名会不匹配，从而拒绝该令牌。');
+            });
+            document.querySelector('[data-jwt-reset]').addEventListener('click', function () {
+                payload = JSON.parse(JSON.stringify(base));
+                btns.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+                show('已重置。当前令牌：' + token());
+            });
+            show('当前令牌：' + token());
+        })();
+        </script>
+
         <h2>OAuth 2.0 授权码流程详解</h2>
 
         <p>OAuth 2.0 不是认证协议，而是一个<strong>授权</strong>协议。它的设计初衷是让用户授权第三方应用访问自己在某个服务上的数据，而不需要把密码交给第三方。比如"使用微信登录某个 App"，背后的流程就是 OAuth 2.0 的授权码模式。</p>
