@@ -5,6 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第21章 K8s 网络与存储</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #dce4ec 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;
+        }
+
+        /* === Layout === */
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #64748b;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #f0f4f8;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            gap: 0;
+        }
+
+        /* === Sidebar === */
+        .sidebar {
+            background: #f8fafc;
+            border-right: 2px solid #cbd5e1;
+            padding: 24px 16px;
+        }
+
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #1e3a5f;
+            border-left: 5px solid #3b82f6;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        .chapter-list { list-style: none; }
+        .chapter-list li { margin-bottom: 6px; }
+
+        .chapter-list a {
+            display: block; padding: 8px 12px; text-decoration: none;
+            color: #334155; border-radius: 12px; transition: all 0.2s;
+            font-weight: 500; font-size: 0.92rem;
+        }
+
+        .chapter-list a:hover {
+            background: #e2e8f0;
+            transform: translateX(3px);
+        }
+
+        .chapter-list .active {
+            background: #475569;
+            color: white;
+            box-shadow: 0 2px 5px rgba(71,85,105,0.3);
+        }
+
+        /* === Main Content === */
+        .main-content { padding: 30px 35px; background: white; min-width: 0; }
+
+        /* === Typography === */
+        h2 {
+            color: #0f172a;
+            border-left: 6px solid #3b82f6;
+            padding-left: 15px;
+            margin: 20px 0 15px;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            color: #1e3a5f;
+            margin: 20px 0 10px;
+            font-size: 1.2rem;
+        }
+
+        h4 {
+            color: #334155;
+            margin: 15px 0 8px;
+            font-size: 1.05rem;
+        }
+
+        p { line-height: 1.85; margin: 10px 0; color: #1e293b; }
+        ul, ol { margin: 10px 0 10px 20px; line-height: 1.8; }
+        li { color: #1e293b; margin-bottom: 4px; }
+        strong { color: #1e1b4b; }
+
+        /* === Code === */
+        pre {
+            background: #0f172a; color: #e8e8f0; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            margin: 15px 0; font-size: 0.9rem; line-height: 1.5;
+        }
+
+        code {
+            background: #f0f4f8; padding: 2px 6px; border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
+        }
+
+        pre code { background: none; padding: 0; }
+
+        /* === Tables === */
+        table {
+            width: 100%; border-collapse: collapse; margin: 15px 0; background: #fafafe;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1; padding: 10px; text-align: left;
+        }
+
+        th {
+            background: #f0f4f8; color: #1e3a5f; font-weight: 600;
+        }
+
+        /* === Callout Boxes === */
+        .tip {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0; line-height: 1.7;
+            background: #e0f2fe; border-left: 6px solid #0ea5e9;
+        }
+
+        .warning {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0; line-height: 1.7;
+            background: #fee2e2; border-left: 6px solid #ef4444;
+        }
+
+        .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0; line-height: 1.7;
+            background: #fef9c3; border: 1px solid #facc15;
+        }
+
+        /* === Footer Navigation === */
+        .footer-nav {
+            margin-top: 45px; padding-top: 20px;
+            border-top: 2px solid #cbd5e1;
+            display: flex; justify-content: space-between;
+        }
+
+        .footer-nav a {
+            padding: 8px 24px; background: #f1f5f9; text-decoration: none;
+            color: #1e40af; border-radius: 40px; font-weight: 500; transition: 0.2s;
+        }
+
+        .footer-nav a:hover {
+            background: #e2e8f0; transform: translateY(-2px);
+        }
+
+        /* === Responsive === */
+        @media (max-width: 768px) {
+            .container { grid-template-columns: minmax(0, 1fr); }
+            .sidebar { border-right: none; border-bottom: 2px solid #cbd5e1; }
+            body { padding: 10px; }
+            .main-content { padding: 20px; overflow-x: auto; }
+            table { min-width: 480px; }
+        }
+
+        /* === Semantic article shell === */
+        a:focus-visible, button:focus-visible { outline: 3px solid #3b82f6; outline-offset: 3px; }
+        .skip-link { position: absolute; left: 1rem; top: -4rem; z-index: 20; background: #1e3a5f; color: #fff; padding: .5rem 1rem; border-radius: 0 0 12px 12px; transition: top .15s; }
+        .skip-link:focus { top: 0; }
+        .article-header { padding: .25rem 0 1.25rem; border-bottom: 2px solid #e2e8f0; margin-bottom: 1.25rem; }
+        .article-header h1 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.25; color: #0f172a; letter-spacing: -.01em; margin: 0 0 .6rem; border: none; padding: 0; }
+        .article-header .dek { font-size: 1.02rem; color: #475569; line-height: 1.75; margin: 0; }
+
+        /* === Figures === */
+        figure { margin: 1.6rem 0; padding: 1rem; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; }
+        figure svg { width: 100%; height: auto; display: block; }
+        figcaption { font-size: .85rem; line-height: 1.7; color: #475569; margin-top: .75rem; padding-top: .7rem; border-top: 1px dashed #cbd5e1; }
+
+        /* === Notes, controls, status === */
+        .note { margin: 1.2rem 0; padding: .8rem 1.1rem; border-left: 5px solid #64748b; background: #f1f5f9; border-radius: 0 12px 12px 0; font-size: .92rem; color: #334155; line-height: 1.7; }
+        .control-row { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
+        .control-row button { font: inherit; font-size: .9rem; cursor: pointer; padding: .5rem .9rem; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #1e3a5f; }
+        .control-row button[aria-pressed="true"] { background: #475569; color: #fff; border-color: #475569; }
+        .status { min-height: 1.4em; color: #1e40af; font-weight: 600; font-size: .9rem; }
+
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+        @media print { .sidebar, .skip-link, .control-row, .footer-nav { display: none !important; } .container { display: block; } .double-border { border: none; box-shadow: none; } figure { break-inside: avoid; } body { background: #fff; padding: 0; } }
+    </style>
 </head>
 <body>
 <a class="skip-link" href="#content">跳转至正文</a>
