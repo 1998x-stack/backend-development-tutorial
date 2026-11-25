@@ -340,6 +340,42 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
         <p><code>--</code> 是 SQL 中的注释符，后面的条件被注释掉了。攻击者不需要密码就能以 admin 身份登录。更恶劣的攻击者可以输入 <code>' OR 1=1 --</code>，这样整个查询返回所有用户，首行就是第一个用户——通常也是管理员。</p>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>在下方输入用户名，切换「字符串拼接」与「参数化」，看看同一段输入会生成什么 SQL、登录是否会成功。演示只在浏览器本地拼接字符串，不会发出任何网络请求，也不会真的执行 SQL。
+        </div>
+
+        <p>
+            <label for="sqli-user">用户名输入：</label>
+            <input id="sqli-user" type="text" value="admin' --" size="24">
+        </p>
+        <div class="control-row" role="group" aria-label="SQL 注入演示">
+            <button type="button" data-sqli="concat" aria-pressed="false">字符串拼接（危险）</button>
+            <button type="button" data-sqli="param" aria-pressed="false">参数化查询（安全）</button>
+        </div>
+        <p class="status" id="sqli-status" aria-live="polite">选择一种写法查看生成的 SQL。</p>
+        <script>
+        (function () {
+            var input = document.getElementById('sqli-user');
+            var out = document.getElementById('sqli-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-sqli]'));
+            function run(mode) {
+                var u = input.value;
+                if (mode === 'concat') {
+                    out.textContent = "拼接后 SQL：SELECT id FROM users WHERE username='" + u + "' AND password='xxx' → 密码条件被注释，登录成功（绕过密码）。";
+                } else {
+                    out.textContent = '参数化 SQL：SELECT id FROM users WHERE username=? AND password=? ，参数为 ["' + u + '", "xxx"] → 输入只作为字符串字面量，登录失败。';
+                }
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    run(b.getAttribute('data-sqli'));
+                });
+            });
+            input.addEventListener('input', function () { out.textContent = '输入已修改，重新选择一种写法查看结果。'; });
+        })();
+        </script>
+
         <h3>参数化查询防护</h3>
         <p>防御 SQL 注入的方法极其简单——<strong>永远不要拼接 SQL 字符串</strong>，使用参数化查询（Prepared Statement）：</p>
 
