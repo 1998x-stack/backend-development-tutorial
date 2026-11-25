@@ -393,6 +393,34 @@
             </tbody>
         </table>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>同一个问题——「一条连接上并发多个请求，可能在哪里被卡住？」切换版本看看答案如何变化。内容来自本节表格的归纳，不是实测数据。
+        </div>
+
+        <div class="control-row" role="group" aria-label="HTTP 版本对比">
+            <button type="button" data-http="1" aria-pressed="false">HTTP/1.1</button>
+            <button type="button" data-http="2" aria-pressed="false">HTTP/2</button>
+            <button type="button" data-http="3" aria-pressed="false">HTTP/3</button>
+        </div>
+        <p class="status" id="http-status" aria-live="polite">选择一个版本查看差异。</p>
+        <script>
+        (function () {
+            var info = {
+                '1': 'HTTP/1.1（TCP）：不支持多路复用，一条连接一次只能处理一个请求，只能在应用层排队（应用层队头阻塞），因此要靠多开连接或域名分片来绕开。',
+                '2': 'HTTP/2（TCP）：流可以多路复用，但所有流共用一个 TCP 连接；一旦丢包，TCP 的按序重传会阻塞后面所有流（传输层队头阻塞），头部压缩用 HPACK。',
+                '3': 'HTTP/3（QUIC over UDP）：每个流独立重传，丢包只影响受影响的流，没有连接级队头阻塞；首次 1-RTT、复访可 0-RTT 建立连接，头部压缩用 QPACK。'
+            };
+            var out = document.getElementById('http-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-http]'));
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    out.textContent = info[b.getAttribute('data-http')];
+                });
+            });
+        })();
+        </script>
+
         <p>对于后端开发者来说，HTTP/2 的多路复用意味着你不再需要用"域名分片"这种 Hack 来突破浏览器连接数限制。HTTP/3 的 0-RTT 握手在移动端弱网环境下能显著减少延迟。截至 2026 年，主要 CDN 和云厂商都已全面支持 HTTP/3，主流浏览器对 HTTP/3 的覆盖率超过 90%。如果你的后端服务还在只支持 HTTP/1.1，是时候考虑升级了。</p>
 
         <div class="warning">
