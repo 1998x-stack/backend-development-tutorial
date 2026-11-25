@@ -357,6 +357,45 @@ XREADGROUP GROUP mygroup consumer1 COUNT 1 STREAMS mystream &gt;
             <figcaption>读路径追求命中率，写路径追求一致性：先改库、再删缓存（而不是改缓存），可避开并发写导致的脏数据。这是最常用也最容易落地的缓存模式。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>缓存的直接收益，是替数据库挡掉多少请求。用总 QPS 和命中率估算落到数据库的 QPS（教学示意，忽略并发与突发流量、不考虑多级缓存）。
+        </div>
+
+        <p>
+            <label for="cache-qps">总请求 QPS：</label>
+            <input id="cache-qps" type="number" value="10000" min="0" step="1000" size="8">
+        </p>
+        <div class="control-row" role="group" aria-label="缓存命中率预设">
+            <button type="button" data-hit="0" aria-pressed="true">命中率 0%</button>
+            <button type="button" data-hit="50" aria-pressed="false">命中率 50%</button>
+            <button type="button" data-hit="80" aria-pressed="false">命中率 80%</button>
+            <button type="button" data-hit="95" aria-pressed="false">命中率 95%</button>
+            <button type="button" data-hit="99" aria-pressed="false">命中率 99%</button>
+        </div>
+        <p class="status" id="cache-status" aria-live="polite"></p>
+        <script>
+        (function () {
+            var qps = document.getElementById('cache-qps');
+            var out = document.getElementById('cache-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-hit]'));
+            var hit = 0;
+            function calc() {
+                var q = Math.max(0, Number(qps.value) || 0);
+                var db = Math.round(q * (1 - hit / 100));
+                out.textContent = '命中率 ' + hit + '%，总 QPS ' + q + ' → 落到数据库的请求约 ' + db + ' QPS。命中率每提高一档，数据库压力按比例下降。';
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    hit = Number(b.getAttribute('data-hit'));
+                    calc();
+                });
+            });
+            qps.addEventListener('input', calc);
+            calc();
+        })();
+        </script>
+
         <h2>缓存三大坑：穿透、击穿、雪崩</h2>
 
         <p>使用缓存时，有三大经典问题需要特别注意。每一个都可能在流量高峰期让你的系统崩溃。</p>
