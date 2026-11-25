@@ -404,6 +404,40 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'pending';
             </tbody>
         </table>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>用同一段「库存 = 1，两个并发请求各扣 1」的场景，对比加行锁前后的结果。数值为教学示意，用来展示并发时序与可见性差异，不代表任何真实压测数据。
+        </div>
+
+        <div class="control-row" role="group" aria-label="库存并发扣减演示">
+            <button type="button" data-stock="naive" aria-pressed="false">不加锁（READ COMMITTED）</button>
+            <button type="button" data-stock="lock" aria-pressed="false">SELECT ... FOR UPDATE</button>
+            <button type="button" data-stock-reset>重置</button>
+        </div>
+        <p class="status" id="stock-status" aria-live="polite">库存 = 1，尚未执行任何事务。</p>
+        <script>
+        (function () {
+            var out = document.getElementById('stock-status');
+            var levels = Array.prototype.slice.call(document.querySelectorAll('[data-stock]'));
+            function run(mode) {
+                if (mode === 'naive') {
+                    out.textContent = 'T1 读 quantity=1 → T2 读 quantity=1（都以为有货）→ T1 扣减提交（=0）→ T2 基于旧值扣减提交（=-1）。结果：超卖，最终库存 = -1。';
+                } else {
+                    out.textContent = 'T1 加行锁 SELECT ... FOR UPDATE → T2 阻塞等待 → T1 扣减提交（=0）→ T2 获锁后重读 quantity=0，校验失败回滚。结果：安全，最终库存 = 0。';
+                }
+            }
+            levels.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    levels.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    run(b.getAttribute('data-stock'));
+                });
+            });
+            document.querySelector('[data-stock-reset]').addEventListener('click', function () {
+                levels.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+                out.textContent = '库存 = 1，尚未执行任何事务。';
+            });
+        })();
+        </script>
+
         <p>一个经典问题是"扣库存"场景下的并发控制。用 READ COMMITTED 级别时，两个并发的扣减请求可能都读到余量 > 0，都执行扣减，结果导致超卖。解决方案通常是用 <code>SELECT ... FOR UPDATE</code>（行级锁）或乐观锁（版本号机制）。</p>
 
 <pre><code>-- 安全的库存扣减方案：行级锁
