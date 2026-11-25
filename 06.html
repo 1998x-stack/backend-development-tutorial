@@ -436,6 +436,43 @@ func (c *LRUCache) Put(key, value int) {
             <figcaption>哈希表把「找到节点」降到 O(1)，双向链表让「移到头部 / 删尾部」也是 O(1)。这个组合出现在进程内缓存、Redis 近似 LRU 策略与 MySQL Buffer Pool 中。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>下面是一个容量为 3 的 LRU 缓存模拟器。点击 key 模拟一次访问：命中会把该 key 移到「最近使用」一端；当缓存已满且访问新 key 时，会淘汰「最久未用」的 key。它逐步复现了上面 Go 版本 <code>Get</code>/<code>Put</code> 的行为（纯前端演示；真实 Redis 采用近似 LRU 采样，与此处的严格 LRU 不完全相同）。
+        </div>
+
+        <div class="control-row" role="group" aria-label="LRU 缓存访问控制">
+            <button type="button" data-lru="A">访问 A</button>
+            <button type="button" data-lru="B">访问 B</button>
+            <button type="button" data-lru="C">访问 C</button>
+            <button type="button" data-lru="D">访问 D</button>
+            <button type="button" data-lru-reset>重置</button>
+        </div>
+        <p class="status" id="lru-status" aria-live="polite">缓存（最近使用 → 最久未用）：空</p>
+        <script>
+        (function () {
+            var cap = 3, order = [];
+            var status = document.getElementById('lru-status');
+            function render(msg) {
+                var list = order.length ? order.join(' → ') : '空';
+                status.textContent = (msg ? msg + '　' : '') + '缓存（最近使用 → 最久未用）：' + list;
+            }
+            function access(k) {
+                var i = order.indexOf(k), hit = i >= 0, evicted = null;
+                if (hit) { order.splice(i, 1); }
+                order.unshift(k);
+                if (order.length > cap) { evicted = order.pop(); }
+                render('访问 ' + k + (hit ? '（命中）' : '（未命中）') + (evicted ? '，淘汰 ' + evicted : ''));
+            }
+            Array.prototype.forEach.call(document.querySelectorAll('[data-lru]'), function (b) {
+                b.addEventListener('click', function () { access(b.getAttribute('data-lru')); });
+            });
+            document.querySelector('[data-lru-reset]').addEventListener('click', function () {
+                order = []; render('已重置');
+            });
+            render('');
+        })();
+        </script>
+
         <h2>实战案例：用正确的数据结构把查询从 3 秒降到 3 毫秒</h2>
 
         <p>让我们看一个综合案例。假设你有一个电商后台系统，需要实现一个功能：根据用户的地理位置（经纬度）查询附近的商铺。</p>
