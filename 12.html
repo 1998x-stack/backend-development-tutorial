@@ -377,6 +377,34 @@ func (h ConsumerHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sa
 
         <p>在消息队列中，"至少一次"（At Least Once）投递是最常见的语义保证——消息可能重复投递，但不会丢失。这意味着消费者的业务逻辑必须是<strong>幂等</strong>的——处理同一条消息多次的结果，应该和处理一次的结果相同。</p>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>场景——消费者已经处理完消息，但在发出 ACK 之前崩溃了。切换投递语义，看看这条消息最终会被处理几次（教学示意，实际实现还取决于分区、事务与去重方案）。
+        </div>
+
+        <div class="control-row" role="group" aria-label="消息投递语义演示">
+            <button type="button" data-delivery="at-most-once" aria-pressed="false">至多一次</button>
+            <button type="button" data-delivery="at-least-once" aria-pressed="false">至少一次</button>
+            <button type="button" data-delivery="exactly-once" aria-pressed="false">恰好一次</button>
+        </div>
+        <p class="status" id="delivery-status" aria-live="polite">选择一种投递语义查看结果。</p>
+        <script>
+        (function () {
+            var info = {
+                'at-most-once': '至多一次：Broker 发出后即认为完成，不重试。消费者崩溃后消息不再重投——这条消息永远丢失，被处理 0 次（对账时可能少一笔）。',
+                'at-least-once': '至少一次：未收到 ACK 就重投。消息会被处理 2 次：一次是崩溃前，一次是重投后。这正是“至少一次”最常见的代价——需要幂等消费来去重。',
+                'exactly-once': '恰好一次：Broker 与消费者用事务 / 幂等去重协同，崩溃后重投也会被去重，最终只生效 1 次。代价是更高的复杂度与吞吐损耗。'
+            };
+            var out = document.getElementById('delivery-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-delivery]'));
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    out.textContent = info[b.getAttribute('data-delivery')];
+                });
+            });
+        })();
+        </script>
+
         <p>比如，"扣减余额 100 元"就不是幂等的——重复执行两次就扣了 200 元。而"将余额设为 0 元"是幂等的——执行多少遍结果都一样。</p>
 
 <pre><code>// 幂等消费的几种常见实现方式
