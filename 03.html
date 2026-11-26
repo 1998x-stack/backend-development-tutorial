@@ -182,6 +182,11 @@
         .control-row button { font: inherit; font-size: .9rem; cursor: pointer; padding: .5rem .9rem; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #1e3a5f; }
         .control-row button[aria-pressed="true"] { background: #475569; color: #fff; border-color: #475569; }
         .status { min-height: 1.4em; color: #1e40af; font-weight: 600; font-size: .9rem; }
+        .perm-box { display: flex; flex-wrap: wrap; gap: 1.2rem; margin: 1rem 0; padding: 1rem 1.2rem; border: 1px solid #cbd5e1; border-radius: 14px; background: #f8fafc; }
+        .perm-group { border: 1px solid #e2e8f0; border-radius: 10px; padding: .6rem .9rem; background: #fff; }
+        .perm-group legend { font-size: .85rem; color: #475569; padding: 0 .4rem; }
+        .perm-group label { display: inline-flex; align-items: center; gap: .3rem; font-size: .9rem; margin-right: .7rem; color: #1e3a5f; cursor: pointer; }
+        .perm-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.15rem; color: #0f172a; }
 
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
         @media print { .sidebar, .skip-link, .control-row, .footer-nav { display: none !important; } .container { display: block; } .double-border { border: none; box-shadow: none; } figure { break-inside: avoid; } body { background: #fff; padding: 0; } }
@@ -313,6 +318,50 @@
             </svg>
             <figcaption>三段 rwx 分别对属主、属组、其他人授权。把每位的 4/2/1 相加，就得到熟悉的八进制权限码 754。图为本课程的示意标注，非 POSIX 标准的逐字定义。</figcaption>
         </figure>
+
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>权限位不用死记。勾选属主 / 属组 / 其他人的读（r=4）、写（w=2）、执行（x=1），八进制数字与符号串会同步变化（教学示意，未包含 setuid / setgid / sticky 特殊位）。
+        </div>
+        <fieldset class="perm-box">
+            <legend class="perm-code">勾选权限位，观察八进制与符号串</legend>
+            <fieldset class="perm-group"><legend>属主 user</legend>
+                <label><input type="checkbox" data-p="u" data-b="4" checked> r</label>
+                <label><input type="checkbox" data-p="u" data-b="2" checked> w</label>
+                <label><input type="checkbox" data-p="u" data-b="1" checked> x</label>
+            </fieldset>
+            <fieldset class="perm-group"><legend>属组 group</legend>
+                <label><input type="checkbox" data-p="g" data-b="4" checked> r</label>
+                <label><input type="checkbox" data-p="g" data-b="2"> w</label>
+                <label><input type="checkbox" data-p="g" data-b="1" checked> x</label>
+            </fieldset>
+            <fieldset class="perm-group"><legend>其他人 other</legend>
+                <label><input type="checkbox" data-p="o" data-b="4" checked> r</label>
+                <label><input type="checkbox" data-p="o" data-b="2"> w</label>
+                <label><input type="checkbox" data-p="o" data-b="1"> x</label>
+            </fieldset>
+        </fieldset>
+        <p class="status perm-code" id="perm-status" aria-live="polite"></p>
+        <script>
+        (function () {
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('[data-p]'));
+            var out = document.getElementById('perm-status');
+            function render() {
+                var oct = '', sym = '';
+                ['u', 'g', 'o'].forEach(function (who) {
+                    var sum = 0, s = '';
+                    boxes.filter(function (b) { return b.getAttribute('data-p') === who; }).forEach(function (b) {
+                        var on = b.checked, bit = Number(b.getAttribute('data-b'));
+                        if (on) { sum += bit; }
+                        s += (on ? ({ 4: 'r', 2: 'w', 1: 'x' })[bit] : '-');
+                    });
+                    oct += sum; sym += s;
+                });
+                out.textContent = '-' + sym + '  →  chmod ' + oct;
+            }
+            boxes.forEach(function (b) { b.addEventListener('change', render); });
+            render();
+        })();
+        </script>
 
         <h2>进程管理实战：ps/top/htop、信号、守护进程</h2>
 
