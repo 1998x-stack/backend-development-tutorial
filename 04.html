@@ -370,6 +370,77 @@ $ git commit -m "feat: add payment module"
             <strong>🤝 团队约定建议：</strong>一个实用的规则是——<strong>合并到公共分支用 merge，保持自己的功能分支整洁用 rebase</strong>。具体来说：在自己的 feature 分支上可以自由 rebase（甚至 <code>rebase -i</code> 交互式重写历史），但在合入 main 分支时使用 merge commit 或 squash merge。不要在已经推送到共享仓库的分支上做 rebase——这是唯一绝对的 Git 禁忌。
         </div>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>切换三种策略，看同一段功能分支历史会画成什么形状（教学示意，省略分支标签 UI，commit 用字母标识）。
+        </div>
+        <div class="control-row" role="group" aria-label="合并策略切换">
+            <button type="button" data-strat="merge" aria-pressed="true">merge</button>
+            <button type="button" data-strat="rebase" aria-pressed="false">rebase</button>
+            <button type="button" data-strat="squash" aria-pressed="false">squash</button>
+        </div>
+        <figure>
+            <svg id="gitgraph" viewBox="0 0 840 200" role="img" aria-labelledby="fig04b-title" xmlns="http://www.w3.org/2000/svg"><title id="fig04b-title">merge / rebase / squash 三种策略的提交图</title></svg>
+            <figcaption id="gitgraph-cap">选择上方策略查看提交图变化。</figcaption>
+        </figure>
+        <p class="status" id="git-status" aria-live="polite"></p>
+        <script>
+        (function () {
+            var svg = document.getElementById('gitgraph');
+            var cap = document.getElementById('gitgraph-cap');
+            var out = document.getElementById('git-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-strat]'));
+            var NS = 'http://www.w3.org/2000/svg';
+            function dot(x, y, label, fill) {
+                var c = document.createElementNS(NS, 'circle');
+                c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 11);
+                c.setAttribute('fill', fill); c.setAttribute('stroke', '#334155');
+                svg.appendChild(c);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', x); t.setAttribute('y', y + 4); t.setAttribute('text-anchor', 'middle');
+                t.setAttribute('font-size', '11'); t.setAttribute('fill', '#fff'); t.textContent = label;
+                svg.appendChild(t);
+            }
+            function line(x1, y1, x2, y2, color) {
+                var p = document.createElementNS(NS, 'path');
+                p.setAttribute('d', 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2);
+                p.setAttribute('stroke', color); p.setAttribute('stroke-width', '3'); p.setAttribute('fill', 'none');
+                svg.appendChild(p);
+            }
+            var data = {
+                merge:  { cap: 'merge：main 上保留一个汇合点，feature 的 A/B/C 三笔历史完整保留。',
+                          txt: 'merge 保留真实分支历史：D 处分叉，A/B/C 在特性线上推进，M 处汇合，M 有两个父提交。' },
+                rebase: { cap: 'rebase：A/B/C 被重新应用到 D 之后，历史线性但 SHA 全变。',
+                          txt: 'rebase 把 A/B/C 重新应用在 D 之后（记作 A\u2019/B\u2019/C\u2019），得到线性历史，但 commit SHA 全部改变。' },
+                squash: { cap: 'squash：main 上只多一个压缩提交 S，中间过程被合掉。',
+                          txt: 'squash 把 A/B/C 压缩成单个提交 S 落到 main，主干历史极简，代价是丢失中间开发细节。' }
+            };
+            function render(kind) {
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                var MY = 80;
+                line(60, MY, 780, MY, '#94a3b8');
+                if (kind === 'merge') {
+                    dot(150, MY, 'D', '#3b82f6'); dot(450, MY, 'M', '#f59e0b'); dot(700, MY, 'E', '#64748b');
+                    line(150, MY, 250, 150, '#10b981'); line(250, 150, 390, 150, '#10b981'); line(390, 150, 450, MY, '#10b981');
+                    dot(255, 150, 'A', '#10b981'); dot(320, 150, 'B', '#10b981'); dot(385, 150, 'C', '#10b981');
+                } else if (kind === 'rebase') {
+                    dot(150, MY, 'D', '#3b82f6'); dot(300, MY, 'A\u2019', '#10b981'); dot(400, MY, 'B\u2019', '#10b981');
+                    dot(500, MY, 'C\u2019', '#10b981'); dot(700, MY, 'E', '#64748b');
+                } else {
+                    dot(150, MY, 'D', '#3b82f6'); dot(420, MY, 'S', '#f59e0b'); dot(700, MY, 'E', '#64748b');
+                }
+                out.textContent = data[kind].txt;
+                cap.textContent = data[kind].cap;
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+                    render(b.getAttribute('data-strat'));
+                });
+            });
+            render('merge');
+        })();
+        </script>
+
         <h2>提交规范：Conventional Commits</h2>
 
         <p>统一提交信息格式的价值远超"好看"。规范的提交信息可以自动生成 CHANGELOG、驱动语义化版本、辅助 CI 流程决策（"这次提交包含了 breaking change，需要发大版本"）。</p>
