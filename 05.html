@@ -402,6 +402,57 @@ async fn main() {
             <figcaption>同一台机器上，三种模型对“等待 I/O”的处理不同：线程模型用更多线程接住等待，事件循环靠非阻塞回调，协程则把大量轻量任务复用到少量 OS 线程上。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>并发量的代价，很大一部分是“每个任务预占多少栈内存”。拖动并发数，对比每请求一线程（按 1 MB 线程栈估算）与有栈协程（按 goroutine 初始栈 2 KB 估算）的峰值内存（教学示意，不含堆内存与运行时开销；实际栈按需伸缩）。
+        </div>
+        <p>
+            <label for="conc-n">并发连接数：</label>
+            <input id="conc-n" type="range" min="100" max="100000" step="100" value="10000">
+            <output id="conc-n-out" for="conc-n">10000</output>
+        </p>
+        <p class="status" id="conc-status" aria-live="polite"></p>
+        <figure>
+            <svg id="conc-bars" viewBox="0 0 840 160" role="img" aria-labelledby="fig05b-title" xmlns="http://www.w3.org/2000/svg"><title id="fig05b-title">线程模型与协程模型栈内存随并发数变化的对数刻度对比</title></svg>
+            <figcaption id="conc-cap">对数刻度下，两者随并发数线性增长，但斜率相差约 512 倍。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var range = document.getElementById('conc-n');
+            var nOut = document.getElementById('conc-n-out');
+            var out = document.getElementById('conc-status');
+            var svg = document.getElementById('conc-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var THREAD_KB = 1024;
+            var GOROUTINE_KB = 2;
+            function human(kb) {
+                if (kb >= 1048576) { return (kb / 1048576).toFixed(1) + ' GB'; }
+                if (kb >= 1024) { return (kb / 1024).toFixed(1) + ' MB'; }
+                return Math.round(kb) + ' KB';
+            }
+            function bar(y, label, kb, lo, hi, color) {
+                var frac = (Math.log(kb) - Math.log(lo)) / (Math.log(hi) - Math.log(lo));
+                var w = Math.max(2, Math.min(1, frac) * 560);
+                var r = document.createElementNS(NS, 'rect');
+                r.setAttribute('x', 150); r.setAttribute('y', y); r.setAttribute('width', w); r.setAttribute('height', 30);
+                r.setAttribute('rx', 8); r.setAttribute('fill', color); svg.appendChild(r);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 150); t.setAttribute('y', y - 6); t.setAttribute('font-size', '14'); t.setAttribute('fill', '#1e3a5f');
+                t.textContent = label + '：' + human(kb); svg.appendChild(t);
+            }
+            function render() {
+                var n = Number(range.value);
+                nOut.textContent = n;
+                var threadKb = n * THREAD_KB, goKb = n * GOROUTINE_KB;
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                bar(40, '每请求一线程（1 MB 栈）', threadKb, 200, 102400000, '#93c5fd');
+                bar(110, '有栈协程（2 KB 初始栈）', goKb, 200, 102400000, '#86efac');
+                out.textContent = n + ' 并发：线程模型约 ' + human(threadKb) + '，协程模型约 ' + human(goKb) + '，相差约 ' + Math.round(THREAD_KB / GOROUTINE_KB) + ' 倍。';
+            }
+            range.addEventListener('input', render);
+            render();
+        })();
+        </script>
+
         <h2>内存管理：GC 调优 vs 所有权系统</h2>
 
         <p>内存管理方式深刻影响着后端服务的性能特征：</p>
