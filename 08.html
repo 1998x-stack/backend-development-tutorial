@@ -182,6 +182,8 @@
         .control-row button { font: inherit; font-size: .9rem; cursor: pointer; padding: .5rem .9rem; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #1e3a5f; }
         .control-row button[aria-pressed="true"] { background: #475569; color: #fff; border-color: #475569; }
         .status { min-height: 1.4em; color: #1e40af; font-weight: 600; font-size: .9rem; }
+        .pg-cell { font-family: ui-monospace, Menlo, monospace; font-size: .85rem; }
+        .pg-cell .chip { display: inline-block; padding: 1px 7px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f1f5f9; }
 
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
         @media print { .sidebar, .skip-link, .control-row, .footer-nav { display: none !important; } .container { display: block; } .double-border { border: none; box-shadow: none; } figure { break-inside: avoid; } body { background: #fff; padding: 0; } }
@@ -412,6 +414,55 @@
         <p><strong>Offset-based</strong> 是传统做法，用 <code>?page=2&size=20</code> 来控制。优点是实现简单、前端可以实现"跳转到第 N 页"的功能。缺点是当数据库有新增或删除时，不同页面之间可能出现数据重复或遗漏——称为"幻读"。</p>
 
         <p><strong>Cursor-based</strong> 用 <code>?cursor=eyJsYXN0X2lkIjogMTAwMH0=&limit=20</code> 来控制。游标指向一个具体的数据位置，下一页从该位置往后取。优点是数据一致性更好（不受中间插入的数据影响），性能更稳定（不需要 OFFSET 跳过大量行）。缺点是无法跳转到任意页。</p>
+
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>为什么翻页时会“看到重复或漏掉”？点一下“在顶部插入新数据”，对比两种分页下第 2 页的内容（教学示意，每页 4 条，按创建时间倒序）。
+        </div>
+        <div class="control-row" role="group" aria-label="分页演示控制">
+            <button type="button" id="pg-insert">在顶部插入新数据</button>
+            <button type="button" id="pg-reset">重置</button>
+        </div>
+        <table>
+            <thead><tr><th>策略</th><th>原始的第 1 页</th><th>原始的第 2 页</th><th>插入后第 2 页</th></tr></thead>
+            <tbody>
+                <tr><td>Offset <code>?page=2</code></td><td id="pg-off1" class="pg-cell"></td><td id="pg-off2" class="pg-cell"></td><td id="pg-off3" class="pg-cell"></td></tr>
+                <tr><td>Cursor <code>?cursor=…</code></td><td id="pg-cur1" class="pg-cell"></td><td id="pg-cur2" class="pg-cell"></td><td id="pg-cur3" class="pg-cell"></td></tr>
+            </tbody>
+        </table>
+        <p class="status" id="pg-status" aria-live="polite"></p>
+        <script>
+        (function () {
+            var items = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            var next = 13;
+            var origPage1 = items.slice(0, 4);   // 用户已看过的第 1 页（固定锚点）
+            var origPage2 = items.slice(4, 8);
+            var statusEl = document.getElementById('pg-status');
+            function chips(ids, dup) {
+                return ids.map(function (i) {
+                    var mark = (dup && dup.indexOf(i) !== -1) ? ' style="background:#fee2e2;border-color:#fca5a5"' : '';
+                    return '<span class="chip"' + mark + '>' + i + '</span>';
+                }).join(' ');
+            }
+            function render(afterInsert) {
+                var offAfter = afterInsert ? items.slice(4, 8) : origPage2;
+                var curCursor = origPage1[origPage1.length - 1];   // 9
+                var curAfter = afterInsert ? items.filter(function (x) { return x < curCursor; }).slice(0, 4) : origPage2;
+                var dup = afterInsert ? offAfter.filter(function (x) { return origPage1.indexOf(x) !== -1; }) : [];
+                document.getElementById('pg-off1').innerHTML = chips(origPage1);
+                document.getElementById('pg-off2').innerHTML = chips(origPage2);
+                document.getElementById('pg-off3').innerHTML = afterInsert ? chips(offAfter, dup) : '—';
+                document.getElementById('pg-cur1').innerHTML = chips(origPage1);
+                document.getElementById('pg-cur2').innerHTML = chips(origPage2);
+                document.getElementById('pg-cur3').innerHTML = afterInsert ? chips(curAfter) : '—';
+                statusEl.textContent = afterInsert
+                    ? '插入新数据后，Offset 的第 2 页变成 ' + offAfter.join('/') + '，与看过的第 1 页重叠（重复 ' + dup.join('/') + '），末尾数据被挤掉；Cursor 锚定在上页末条 ' + curCursor + '，第 2 页仍是 ' + curAfter.join('/') + '。'
+                    : '当前为初始数据。插入新数据后观察两种策略的第 2 页差异。';
+            }
+            document.getElementById('pg-insert').addEventListener('click', function () { items.unshift(next); render(true); });
+            document.getElementById('pg-reset').addEventListener('click', function () { render(false); });
+            render(false);
+        })();
+        </script>
 
         <p>两者的实现对比：</p>
 
