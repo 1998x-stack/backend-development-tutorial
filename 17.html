@@ -471,6 +471,58 @@ func main() {
             <strong>🔑 告警设计原则：</strong>告警的可行动性（Actionability）是最重要的。如果你的告警只是"CPU 高了"，值班人员不知道该怎么办——"高多少？持续了多久？哪个进程导致的？"一个好的告警应该是：<strong>"用户服务的 CPU 利用率在过去 15 分钟持续超过 85%，avg_load 达到 12，怀疑是订单处理模块的 goroutine 泄漏，请查看 dashboard X"</strong>。如果收告警的人不知道下一步该做什么，这个告警就是噪音。
         </div>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>平均值会掩盖尾部延迟。模型：100 个请求样本，正常 100ms，慢请求 3000ms；拖动慢请求个数，看平均值、P50 / P90 / P99 如何分别变化（教学示意，百分位用最近秩法）。
+        </div>
+        <p>
+            <label for="lat-k">慢请求个数（/100）：</label>
+            <input id="lat-k" type="range" min="0" max="20" step="1" value="2">
+            <output id="lat-k-out" for="lat-k">2</output>
+        </p>
+        <p class="status" id="lat-status" aria-live="polite"></p>
+        <figure>
+            <svg id="lat-bars" viewBox="0 0 840 170" role="img" aria-labelledby="fig17b-title" xmlns="http://www.w3.org/2000/svg"><title id="fig17b-title">平均值与 P50/P90/P99 随慢请求比例变化的对比</title></svg>
+            <figcaption>平均值随慢请求比例线性上升；P99 只要尾部占比超过 1%，就立刻跳到慢请求的量级。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var range = document.getElementById('lat-k');
+            var kOut = document.getElementById('lat-k-out');
+            var out = document.getElementById('lat-status');
+            var svg = document.getElementById('lat-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var FAST = 100, SLOW = 3000, N = 100, SCALE = 3000;
+            function pct(k, p) {
+                var idx = Math.ceil(p / 100 * N) - 1;   // 最近秩法
+                return idx >= N - k ? SLOW : FAST;       // 排序后最后 k 个为慢请求
+            }
+            function row(y, label, ms, color) {
+                var r = document.createElementNS(NS, 'rect');
+                r.setAttribute('x', 150); r.setAttribute('y', y); r.setAttribute('width', Math.max(2, ms / SCALE * 560)); r.setAttribute('height', 24);
+                r.setAttribute('rx', 6); r.setAttribute('fill', color); svg.appendChild(r);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 146); t.setAttribute('y', y + 17); t.setAttribute('text-anchor', 'end'); t.setAttribute('font-size', '13'); t.setAttribute('fill', '#334155');
+                t.textContent = label; svg.appendChild(t);
+                var v = document.createElementNS(NS, 'text');
+                v.setAttribute('x', 156 + Math.max(2, ms / SCALE * 560)); v.setAttribute('y', y + 17); v.setAttribute('font-size', '12'); v.setAttribute('fill', '#1e3a5f');
+                v.textContent = Math.round(ms) + ' ms'; svg.appendChild(v);
+            }
+            function render() {
+                var k = Number(range.value);
+                kOut.textContent = k;
+                var avg = (FAST * (N - k) + SLOW * k) / N;
+                var p50 = pct(k, 50), p90 = pct(k, 90), p99 = pct(k, 99);
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                row(16, '平均', avg, '#93c5fd'); row(58, 'P50', p50, '#86efac');
+                row(100, 'P90', p90, '#fde047'); row(142, 'P99', p99, '#fca5a5');
+                out.textContent = '慢请求 ' + k + '% → 平均 ' + Math.round(avg) + ' ms' + (avg < 300 ? '（看似健康）' : '') + '，但 P50=' + p50 + ' ms、P90=' + p90 + ' ms、P99=' + p99 + ' ms。' +
+                    (p99 === SLOW ? ' 约 ' + k + '% 的用户体验着秒级延迟，平均值完全看不出来。' : ' 目前尾部尚未进入 P99。');
+            }
+            range.addEventListener('input', render);
+            render();
+        })();
+        </script>
+
         <figure>
             <svg role="img" aria-labelledby="fig17a-title fig17a-desc" viewBox="0 0 840 260" xmlns="http://www.w3.org/2000/svg">
                 <title id="fig17a-title">可观测性三支柱与告警链路</title>
