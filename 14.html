@@ -398,6 +398,48 @@ const resolvers = {
             <figcaption>N+1 的根源是“每个解析器各自发一次查询”。DataLoader 把同一 tick 内的请求排队，合并成一次 IN 查询并缓存回填，把总分从 1+N 降到 2。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>N+1 的开销随列表长度和关联字段数增长。调节帖子数量、勾选要嵌套的关联字段，对比两种解析器的数据库查询次数（教学示意，假设每个关联字段一批；未含嵌套关联与分页）。
+        </div>
+        <p>
+            <label for="n1-n">帖数量 N：</label>
+            <input id="n1-n" type="range" min="1" max="100" step="1" value="10">
+            <output id="n1-out" for="n1-n">10</output>
+        </p>
+        <div class="control-row" role="group" aria-label="关联字段选择">
+            <button type="button" data-rel="author" aria-pressed="true">作者 author</button>
+            <button type="button" data-rel="comments" aria-pressed="true">评论 comments</button>
+            <button type="button" data-rel="tags" aria-pressed="false">标签 tags</button>
+        </div>
+        <p class="status" id="n1-status" aria-live="polite"></p>
+        <script>
+        (function () {
+            var range = document.getElementById('n1-n');
+            var nOut = document.getElementById('n1-out');
+            var out = document.getElementById('n1-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-rel]'));
+            function render() {
+                var n = Number(range.value);
+                nOut.textContent = n;
+                var f = btns.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; }).length;
+                var naive = 1 + n * f;
+                var loader = f > 0 ? 1 + f : 1;
+                out.textContent = 'N=' + n + '、关联字段 ' + f + ' 个 →\n' +
+                    '朴素解析器：1 + ' + n + '×' + f + ' = ' + naive + ' 次查询；' +
+                    'DataLoader：1 + ' + f + ' = ' + loader + ' 次查询，降低约 ' + (naive / loader).toFixed(1) + ' 倍。';
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var on = b.getAttribute('aria-pressed') === 'true';
+                    b.setAttribute('aria-pressed', on ? 'false' : 'true');
+                    render();
+                });
+            });
+            range.addEventListener('input', render);
+            render();
+        })();
+        </script>
+
         <h2>GraphQL vs REST 场景选择</h2>
 
         <p>GraphQL 和 REST 不是替代关系，而是互补关系。GraphQL 在以下场景中优势明显：客户端多样（多种前端、移动端）、数据视图差异大、前端迭代速度快。REST 在以下场景中仍然不可替代：简单的 CRUD 接口、缓存策略（HTTP 缓存天然适配 REST）、文件上传、日志和监控的便利性。</p>
