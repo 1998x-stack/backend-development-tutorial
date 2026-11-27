@@ -399,6 +399,88 @@ spec:
 
         <p>滚动更新的策略参数很关键。<code>maxUnavailable: 1</code> 表示滚动过程中最多允许 1 个 Pod 不可用（确保基本服务能力），<code>maxSurge: 1</code> 表示可以多启动 1 个 Pod（确保更新速度）。对于关键业务，可以设置 <code>maxUnavailable: 0</code> + <code>maxSurge: 1</code> 实现"先启动新 Pod，再停止旧 Pod"的蓝绿式更新，但要注意这会短暂地加倍资源占用。</p>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>滚动更新的节奏由 <code>maxSurge</code>（先多起几个）和 <code>maxUnavailable</code>（最多断几个）决定。拖动参数，看模拟出的新旧 Pod 逐步替换时序——这是确定性推演，<strong>教学示意</strong>，非真实调度行为。
+        </div>
+        <p><label for="ro-r">副本数：</label> <input id="ro-r" type="range" min="3" max="10" step="1" value="6"> <output for="ro-r" id="ro-r-out">6</output></p>
+        <p><label for="ro-u">maxUnavailable：</label> <input id="ro-u" type="range" min="0" max="3" step="1" value="1"> <output for="ro-u" id="ro-u-out">1</output></p>
+        <p><label for="ro-s">maxSurge：</label> <input id="ro-s" type="range" min="0" max="3" step="1" value="1"> <output for="ro-s" id="ro-s-out">1</output></p>
+        <div class="control-row" role="group" aria-label="滚动更新预设">
+            <button type="button" data-preset="default">默认 S=1/U=1</button>
+            <button type="button" data-preset="zerodown">零不可用 S=1/U=0</button>
+            <button type="button" data-preset="fast">快速 S=3/U=3</button>
+        </div>
+        <p class="status" id="ro-status" aria-live="polite"></p>
+        <figure>
+            <svg id="ro-timeline" role="img" aria-labelledby="fig20b-title" viewBox="0 0 840 220" xmlns="http://www.w3.org/2000/svg"><title id="fig20b-title">滚动更新过程中旧版本与新版本 Pod 数量的逐步变化</title></svg>
+            <figcaption>每一列是一个时间步：蓝为旧版本 Pod、绿为新版本 Pod。虚线为期望副本数 R。U 越大，可用实例越少；S 越大，峰值总 Pod 数越高。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var r = document.getElementById('ro-r'), u = document.getElementById('ro-u'), s = document.getElementById('ro-s');
+            var rO = document.getElementById('ro-r-out'), uO = document.getElementById('ro-u-out'), sO = document.getElementById('ro-s-out');
+            var status = document.getElementById('ro-status');
+            var svg = document.getElementById('ro-timeline');
+            var NS = 'http://www.w3.org/2000/svg';
+            var PRESETS = { 'default': [6, 1, 1], zerodown: [6, 0, 1], fast: [6, 3, 3] };
+            function schedule(R, U, S) {
+                var steps = [[R, 0]], old = R, nw = 0, guard = 0, stuck = false;
+                while ((old > 0 || nw < R) && guard++ < 60) {
+                    var c = Math.min(R + S - (old + nw), R - nw);
+                    nw += c;
+                    var d = Math.min(old, (old + nw) - (R - U));
+                    old -= d;
+                    if (c === 0 && d === 0) { stuck = true; break; }
+                    steps.push([old, nw]);
+                }
+                return { steps: steps, stuck: stuck };
+            }
+            function render() {
+                var R = Number(r.value), U = Number(u.value), S = Number(s.value);
+                rO.textContent = R; uO.textContent = U; sO.textContent = S;
+                var res = schedule(R, U, S), steps = res.steps;
+                var maxVal = R + S, x0 = 60, W = 760, colW = Math.min(64, W / steps.length);
+                var base = 190, H = 140;
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                function rect(x, y, w, h, fill) {
+                    var e = document.createElementNS(NS, 'rect');
+                    e.setAttribute('x', x); e.setAttribute('y', y); e.setAttribute('width', w); e.setAttribute('height', h);
+                    e.setAttribute('rx', 3); e.setAttribute('fill', fill); svg.appendChild(e);
+                }
+                function txt(x, y, t, fill, anchor, size) {
+                    var e = document.createElementNS(NS, 'text');
+                    e.setAttribute('x', x); e.setAttribute('y', y); e.setAttribute('text-anchor', anchor || 'middle');
+                    e.setAttribute('font-size', size || '12'); e.setAttribute('fill', fill); e.textContent = t; svg.appendChild(e);
+                }
+                var rY = base - R / maxVal * H;
+                var line = document.createElementNS(NS, 'line');
+                line.setAttribute('x1', x0 - 6); line.setAttribute('x2', x0 + W); line.setAttribute('y1', rY); line.setAttribute('y2', rY);
+                line.setAttribute('stroke', '#94a3b8'); line.setAttribute('stroke-dasharray', '5 5'); svg.appendChild(line);
+                txt(x0 - 10, rY + 4, 'R=' + R, '#475569', 'end');
+                steps.forEach(function (st, i) {
+                    var old = st[0], nw = st[1], x = x0 + i * colW;
+                    var oh = old / maxVal * H, nh = nw / maxVal * H;
+                    if (old > 0) rect(x + 6, base - oh, colW - 12, oh, '#60a5fa');
+                    if (nw > 0) rect(x + 6, base - oh - nh, colW - 12, nh, '#34d399');
+                    txt(x + colW / 2, base + 16, 't' + i, '#64748b');
+                });
+                var peak = Math.max.apply(null, steps.map(function (st) { return st[0] + st[1]; }));
+                var lowest = Math.min.apply(null, steps.map(function (st) { return st[0] + st[1]; }));
+                status.textContent = res.stuck
+                    ? 'S=0 且 U=0：无法在不减少可用实例的情况下引入新版本，这是无效配置。'
+                    : '完成滚动共 ' + (steps.length - 1) + ' 步；峰值 ' + peak + ' 个 Pod（R+S=' + (R + S) + '），最低可用 ' + lowest + ' 个（R-U=' + (R - U) + '）。' + (U === 0 ? ' 可用实例始终不低于 R，实现零停机。' : ' 过程中会有实例短暂不可用。');
+            }
+            [r, u, s].forEach(function (el) { el.addEventListener('input', render); });
+            Array.prototype.slice.call(document.querySelectorAll('[data-preset]')).forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var p = PRESETS[b.getAttribute('data-preset')];
+                    r.value = p[0]; u.value = p[1]; s.value = p[2]; render();
+                });
+            });
+            render();
+        })();
+        </script>
+
         <h2>Service 与网络：ClusterIP / NodePort / LoadBalancer</h2>
 
         <p>Pod 是"朝生暮死"的——每次重启 IP 都会变。Service 是 K8s 的网络抽象层，它为了一组 Pod 提供一个稳定的 VIP（虚拟 IP）和 DNS 名称，同时负责请求的负载均衡。</p>

@@ -486,6 +486,73 @@ jobs:
             <strong>🔑 部署策略选择：</strong>对于大多数后端服务，推荐的组合是：<strong>滚动更新作为默认策略 + 金丝雀发布用于重大变更</strong>。蓝绿部署保留给那些需要"瞬时切换"和"瞬时回滚"的关键服务。无论哪种策略，<strong>自动化监控和自动回滚</strong>都是必须的——如果部署后错误率上升 5%，系统应该自动触发回滚，而不是等人来决策。
         </div>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>金丝雀发布的价值在于“控制影响面”。假设旧版本错误率 0.5%，并模拟一个带着 5% 错误率的新版本，拖动流量比例，看全站用户可见错误率如何被限量（计算为流量加权，<strong>教学示意</strong>，非真实监控数据）。
+        </div>
+        <p><label for="c-weight">金丝雀流量比例：</label> <input id="c-weight" type="range" min="0" max="100" step="1" value="5"> <output for="c-weight" id="c-weight-out">5</output>%</p>
+        <div class="control-row" role="group" aria-label="金丝雀操作">
+            <button type="button" data-w="1">1%</button>
+            <button type="button" data-w="5">5%</button>
+            <button type="button" data-w="50">50%</button>
+            <button type="button" data-w="100">100%</button>
+            <button type="button" id="c-bug" aria-pressed="true">新版本含 bug（5% 错误率）</button>
+        </div>
+        <p class="status" id="c-status" aria-live="polite"></p>
+        <figure>
+            <svg id="c-bars" role="img" aria-labelledby="fig18b-title" viewBox="0 0 840 140" xmlns="http://www.w3.org/2000/svg"><title id="fig18b-title">不同金丝雀流量比例下全站用户可见错误率</title></svg>
+            <figcaption>横条为全站错误率（流量加权）。比例越大，单个 bug 的爆炸半径越大；金丝雀的意义是把比例先压到很小再逐步放大。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var OLD_ERR = 0.5, BUG_ERR = 5.0;
+            var range = document.getElementById('c-weight');
+            var wOut = document.getElementById('c-weight-out');
+            var bugBtn = document.getElementById('c-bug');
+            var status = document.getElementById('c-status');
+            var svg = document.getElementById('c-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var buggy = true;
+            function render() {
+                var w = Number(range.value) / 100;
+                wOut.textContent = range.value;
+                var canaryErr = buggy ? BUG_ERR : OLD_ERR;
+                var visible = (w * canaryErr + (1 - w) * OLD_ERR);
+                var full = canaryErr;            // 若直接全量切流
+                var max = Math.max(full, 0.001);
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                [['当前全站可见', visible, '#60a5fa'], ['若直接全量切流', full, '#fca5a5']].forEach(function (row, i) {
+                    var y = 20 + i * 52;
+                    var r = document.createElementNS(NS, 'rect');
+                    r.setAttribute('x', 200); r.setAttribute('y', y); r.setAttribute('height', 32);
+                    r.setAttribute('width', Math.max(2, row[1] / max * 580)); r.setAttribute('rx', 6);
+                    r.setAttribute('fill', row[2]); svg.appendChild(r);
+                    var t = document.createElementNS(NS, 'text');
+                    t.setAttribute('x', 192); t.setAttribute('y', y + 21); t.setAttribute('text-anchor', 'end');
+                    t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = row[0];
+                    svg.appendChild(t);
+                    var v = document.createElementNS(NS, 'text');
+                    v.setAttribute('x', 208 + Math.max(2, row[1] / max * 580)); v.setAttribute('y', y + 21);
+                    v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = row[1].toFixed(2) + '%';
+                    svg.appendChild(v);
+                });
+                status.textContent = '金丝雀 ' + range.value + '% 流量 → 全站可见错误率 ' + visible.toFixed(2) + '%';
+                if (buggy && Number(range.value) >= 100) status.textContent += '。已全量切流，bug 已影响所有用户——此时只能紧急回滚。';
+                else if (buggy) status.textContent += '（直接全量切流将是 ' + full.toFixed(2) + '%）。先小比例观察指标，确认稳定再放大。';
+                else status.textContent += '。新版本健康，可以安全地逐步放大比例。';
+            }
+            range.addEventListener('input', render);
+            Array.prototype.slice.call(document.querySelectorAll('[data-w]')).forEach(function (b) {
+                b.addEventListener('click', function () { range.value = b.getAttribute('data-w'); render(); });
+            });
+            bugBtn.addEventListener('click', function () {
+                buggy = !buggy;
+                bugBtn.setAttribute('aria-pressed', String(buggy));
+                render();
+            });
+            render();
+        })();
+        </script>
+
         <h2>特性开关（Feature Flag）：解耦部署与发布</h2>
 
         <p>传统上，"部署"和"发布"是同一个动作——代码部署到生产环境，用户立刻就能用上新功能。但这种方式存在一个根本问题：<strong>部署的风险和发布的风险捆绑在一起</strong>。通过特性开关（Feature Flag），你可以把两者解耦。</p>
