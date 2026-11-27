@@ -310,6 +310,69 @@
             <li><strong>可观测</strong>：全链路追踪 + 黄金指标告警 + 统一日志</li>
         </ul>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>把上面“99.95% 可用性”翻译成可度量的错误预算：可用性目标越高，允许的停机时间越少。拖动目标值与周期，看每个月/年到底能挂多久（纯公式计算，非业务承诺）。
+        </div>
+        <p><label for="slo-a">可用性目标：</label> <input id="slo-a" type="range" min="9900" max="9999" step="1" value="9995"> <output for="slo-a" id="slo-a-out">99.95</output>%</p>
+        <div class="control-row" role="group" aria-label="错误预算周期">
+            <button type="button" data-period="30">月度（30 天）</button>
+            <button type="button" data-period="365">年度（365 天）</button>
+        </div>
+        <p class="status" id="slo-status" aria-live="polite"></p>
+        <figure>
+            <svg id="slo-bars" role="img" aria-labelledby="fig28b-title" viewBox="0 0 840 160" xmlns="http://www.w3.org/2000/svg"><title id="fig28b-title">选定可用性目标下，各周期允许的停机时间预算</title></svg>
+            <figcaption>横条为允许停机时间（错误预算）。目标从 99.9% 拉到 99.99%，预算会缩水十倍——这也意味着更多依赖与发布容量。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var TARGETS = [99.9, 99.95, 99.99];
+            var a = document.getElementById('slo-a');
+            var aOut = document.getElementById('slo-a-out');
+            var status = document.getElementById('slo-status');
+            var svg = document.getElementById('slo-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var period = 30;
+            function downtime(availPct, days) {
+                return days * 86400 * (1 - availPct / 100);
+            }
+            function human(sec) {
+                if (sec >= 3600) return (sec / 3600).toFixed(2) + ' 小时';
+                if (sec >= 60) return (sec / 60).toFixed(1) + ' 分钟';
+                return sec.toFixed(1) + ' 秒';
+            }
+            function render() {
+                var sel = Number(a.value) / 100;
+                aOut.textContent = sel.toFixed(2);
+                var values = TARGETS.map(function (t) { return downtime(t, period); });
+                var max = downtime(99.9, period);
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                TARGETS.forEach(function (t, i) {
+                    var y = 16 + i * 46, on = Math.abs(t - sel) < 0.006;
+                    var b = document.createElementNS(NS, 'rect');
+                    b.setAttribute('x', 170); b.setAttribute('y', y); b.setAttribute('height', 32);
+                    b.setAttribute('width', Math.max(2, values[i] / max * 600)); b.setAttribute('rx', 6);
+                    b.setAttribute('fill', on ? '#f59e0b' : '#93c5fd'); svg.appendChild(b);
+                    var lb = document.createElementNS(NS, 'text');
+                    lb.setAttribute('x', 162); lb.setAttribute('y', y + 21); lb.setAttribute('text-anchor', 'end');
+                    lb.setAttribute('font-size', '13'); lb.setAttribute('fill', on ? '#92400e' : '#334155');
+                    lb.textContent = t.toFixed(2) + '%'; svg.appendChild(lb);
+                    var v = document.createElementNS(NS, 'text');
+                    v.setAttribute('x', 178 + Math.max(2, values[i] / max * 600)); v.setAttribute('y', y + 21);
+                    v.setAttribute('font-size', '12'); v.setAttribute('fill', '#1e3a5f'); v.textContent = human(values[i]);
+                    svg.appendChild(v);
+                });
+                status.textContent = '目标 ' + sel.toFixed(2) + '% ，' + period + ' 天允许停机 ' + human(downtime(sel, period)) +
+                    '（年度约 ' + human(downtime(sel, 365)) + '）。' +
+                    (sel >= 99.99 ? ' 这已接近“四个九”，对依赖链与发布流程要求极高。' : ' 每提高一个“九”，预算大约缩水。');
+            }
+            a.addEventListener('input', render);
+            Array.prototype.slice.call(document.querySelectorAll('[data-period]')).forEach(function (b) {
+                b.addEventListener('click', function () { period = Number(b.getAttribute('data-period')); render(); });
+            });
+            render();
+        })();
+        </script>
+
         <h2>架构设计：微服务拆分、API 网关、事件驱动</h2>
 
         <p>整体架构采用"API 网关 + 微服务 + 事件驱动"的模式。每个服务独立部署、独立数据库、通过 API 网关对外暴露统一的入口。</p>
