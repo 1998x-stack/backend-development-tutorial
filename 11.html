@@ -237,7 +237,7 @@
 
         <p>那是我第一次意识到：<strong>没有一种数据库能解决所有问题。</strong>每种数据存储方案都是为特定场景优化的——关系型数据库擅长强一致和复杂查询，Redis 擅长极速读写，MongoDB 擅长灵活文档模型，Elasticsearch 擅长全文搜索。选对工具，比把一种工具用到极致更重要。</p>
 
-        <p>本章我们聚焦两个最常见的非关系型存储场景：<strong>缓存（Redis）</strong>和<strong>文档数据库（MongoDB）</strong>。它们覆盖了后端开发中 90% 以上的 NoSQL 需求。</p>
+        <p>本章我们聚焦两个最常见的非关系型存储场景：<strong>缓存（Redis）</strong>和<strong>文档数据库（MongoDB）</strong>。它们是后端开发中最常见的两类 NoSQL 需求。</p>
 
         <div class="highlight">
             <strong>🔑 核心思维：</strong>不要把数据库当作"存数据的地方"，而是当作"为特定查询模式设计的存储引擎"。关系型数据库的查询模式是"SQL + JOIN + 事务"，Redis 的查询模式是"key-value + 数据结构操作"，MongoDB 的查询模式是"文档 + 聚合管道"。不同的查询模式决定了不同的数据建模方式。
