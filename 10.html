@@ -404,6 +404,33 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'pending';
             </tbody>
         </table>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig10b-title fig10b-desc" viewBox="0 0 840 280" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig10b-title">不可重复读的并发时序</title>
+                <desc id="fig10b-desc">事务 T1 先读到 balance 为 100；随后事务 T2 将 balance 改写为 50 并提交；T1 在同一事务内再次读取时得到 50，与第一次读取不一致，即“不可重复读”。</desc>
+                <defs><marker id="fig10b-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b45309"/></marker></defs>
+                <rect x="0" y="0" width="840" height="280" rx="16" fill="#f8fafc"/>
+                <text x="420" y="28" text-anchor="middle" font-size="18" fill="#1e3a5f">不可重复读：同一事务内两次读到不同值（教学示意）</text>
+                <line x1="280" y1="56" x2="280" y2="268" stroke="#93c5fd" stroke-width="2" stroke-dasharray="6 6"/>
+                <line x1="600" y1="56" x2="600" y2="268" stroke="#fcd34d" stroke-width="2" stroke-dasharray="6 6"/>
+                <g font-size="15" fill="#1e3a5f" text-anchor="middle"><text x="280" y="50">事务 T1（读）</text><text x="600" y="50">事务 T2（写）</text></g>
+                <g>
+                    <rect x="110" y="80" width="340" height="46" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+                    <rect x="450" y="144" width="300" height="46" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
+                    <rect x="110" y="216" width="340" height="46" rx="10" fill="#dbeafe" stroke="#60a5fa"/>
+                </g>
+                <g font-size="14" fill="#1e293b">
+                    <text x="280" y="100" text-anchor="middle">① SELECT balance → 100</text>
+                    <text x="600" y="164" text-anchor="middle">② UPDATE balance=50; COMMIT</text>
+                    <text x="280" y="236" text-anchor="middle">③ SELECT balance → 50</text>
+                </g>
+                <path d="M750 167 L790 167 L790 239 L452 239" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#fig10b-dash)"/>
+                <text x="770" y="150" text-anchor="middle" font-size="12" fill="#b45309">T2 已提交的值</text>
+                <text x="280" y="74" text-anchor="middle" font-size="12" fill="#b91c1c">① ≠ ③</text>
+            </svg>
+            <figcaption>READ COMMITTED 下，T1 两次读取之间 T2 提交了新值，导致 T1 在同一事务内“同一个查询得到不同结果”，这就是不可重复读；把隔离级别提到 REPEATABLE READ（同一事务读快照）才能避免。图中数值为教学示意。</figcaption>
+        </figure>
+
         <div class="note">
             <strong>🎛️ 动手试一试：</strong>用同一段「库存 = 1，两个并发请求各扣 1」的场景，对比加行锁前后的结果。数值为教学示意，用来展示并发时序与可见性差异，不代表任何真实压测数据。
         </div>
