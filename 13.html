@@ -452,6 +452,64 @@ for {
 
         <p>但注意：<strong>这些数据只代表服务间通信的对比。</strong>如果客户端是浏览器或移动端，REST 仍然是最友好的选择。如果内部服务之间需要高吞吐低延迟的通信，gRPC 的优势是压倒性的。</p>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>把上表 100 个对象的样本作为基准（JSON ≈120 B/对象，Protobuf ≈30 B/对象），拖动对象数量，看两种序列化下的消息体大小差距如何随数据量放大。这是对样本的<strong>线性外推，属教学示意</strong>，真实节长度取决于字段类型与取值，并非精确预测。
+        </div>
+        <p>
+            <label for="pb-n">对象数量：</label>
+            <input id="pb-n" type="range" min="1" max="1000" step="1" value="100">
+            <output id="pb-n-out" for="pb-n">100</output> 个
+        </p>
+        <div class="control-row" role="group" aria-label="预设对象数量">
+            <button type="button" data-n="100">100 个对象</button>
+            <button type="button" data-n="500">500 个对象</button>
+            <button type="button" data-n="1000">1000 个对象</button>
+        </div>
+        <p class="status" id="pb-status" aria-live="polite"></p>
+        <figure>
+            <svg id="pb-bars" role="img" aria-labelledby="fig13b-title" viewBox="0 0 840 130" xmlns="http://www.w3.org/2000/svg"><title id="fig13b-title">不同对象数量下 JSON 与 Protobuf 消息体大小的对比</title></svg>
+            <figcaption>两条横条按同一比例尺绘制。数据量越大，相对差异带来的绝对带宽成本越明显（教学示意，线性外推）。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var range = document.getElementById('pb-n');
+            var nOut = document.getElementById('pb-n-out');
+            var out = document.getElementById('pb-status');
+            var svg = document.getElementById('pb-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var JSON_B = 120, PROTO_B = 30;      // 来自上表 100 对象的样本，线性外推
+            function kb(bytes) { return bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB'; }
+            function bar(y, label, bytes, max, color) {
+                var r = document.createElementNS(NS, 'rect');
+                r.setAttribute('x', 150); r.setAttribute('y', y); r.setAttribute('height', 30);
+                r.setAttribute('width', Math.max(2, bytes / max * 620)); r.setAttribute('rx', 6);
+                r.setAttribute('fill', color); svg.appendChild(r);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 142); t.setAttribute('y', y + 20); t.setAttribute('text-anchor', 'end');
+                t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = label;
+                svg.appendChild(t);
+                var v = document.createElementNS(NS, 'text');
+                v.setAttribute('x', 158 + Math.max(2, bytes / max * 620)); v.setAttribute('y', y + 20);
+                v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = kb(bytes);
+                svg.appendChild(v);
+            }
+            function render() {
+                var n = Number(range.value);
+                nOut.textContent = n;
+                var j = n * JSON_B, p = n * PROTO_B, max = n * JSON_B;
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                bar(20, 'JSON', j, max, '#fbbf24');
+                bar(74, 'Protobuf', p, max, '#60a5fa');
+                out.textContent = n + ' 个对象 → JSON ' + kb(j) + '，Protobuf ' + kb(p) + '，约为 JSON 的 ' + Math.round(p / j * 100) + '%（节省 ' + kb(j - p) + '）。';
+            }
+            range.addEventListener('input', render);
+            Array.prototype.slice.call(document.querySelectorAll('[data-n]')).forEach(function (b) {
+                b.addEventListener('click', function () { range.value = b.getAttribute('data-n'); render(); });
+            });
+            render();
+        })();
+        </script>
+
         <div class="highlight">
             <strong>📌 选型决策树：</strong>
             <br>• 对外 API（浏览器/移动端）→ REST / GraphQL

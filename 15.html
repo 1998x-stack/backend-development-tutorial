@@ -320,6 +320,75 @@
             <figcaption>金字塔不是教条比例，而是一条成本曲线：单元测试最快最稳，E2E 最接近用户但最慢最脆。把大量验证下沉到下层，只把关键路径留给 E2E。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>“倒金字塔”的代价可以直接算出来。按上表的量级取单例耗时（单元 5 ms、集成 2 s、E2E 60 s，<strong>教学示意</strong>），拖动三个滑块调整各层数量，看总耗时如何被少数 E2E 测试拖向分钟级。
+        </div>
+        <p><label for="t-unit">单元测试数量：</label> <input id="t-unit" type="range" min="0" max="400" step="10" value="280"> <output for="t-unit" id="t-unit-out">280</output></p>
+        <p><label for="t-int">集成测试数量：</label> <input id="t-int" type="range" min="0" max="100" step="5" value="80"> <output for="t-int" id="t-int-out">80</output></p>
+        <p><label for="t-e2e">E2E 测试数量：</label> <input id="t-e2e" type="range" min="0" max="40" step="1" value="8"> <output for="t-e2e" id="t-e2e-out">8</output></p>
+        <div class="control-row" role="group" aria-label="预设测试套件比例">
+            <button type="button" data-preset="pyramid">健康金字塔（70/20/10）</button>
+            <button type="button" data-preset="inverted">倒金字塔（E2E 偏多）</button>
+        </div>
+        <p class="status" id="t-status" aria-live="polite"></p>
+        <figure>
+            <svg id="t-bars" role="img" aria-labelledby="fig15b-title" viewBox="0 0 840 150" xmlns="http://www.w3.org/2000/svg"><title id="fig15b-title">各层测试对套件总耗时的贡献（秒）</title></svg>
+            <figcaption>横条按各层总耗时（秒，对数感受）展示。单元测试再多也几乎不占时间，少量 E2E 就可能主导整个套件（教学示意）。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var UNIT_S = 0.005, INT_S = 2, E2E_S = 60;   // 来自上表层级的量级，教学示意
+            var spec = [
+                { id: 't-unit', out: 't-unit-out', secs: UNIT_S, label: '单元', color: '#86efac' },
+                { id: 't-int',  out: 't-int-out',  secs: INT_S,  label: '集成', color: '#fde047' },
+                { id: 't-e2e',  out: 't-e2e-out',  secs: E2E_S,  label: 'E2E',  color: '#fca5a5' }
+            ];
+            var status = document.getElementById('t-status');
+            var svg = document.getElementById('t-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            function fmt(s) { return s < 60 ? s.toFixed(1) + ' s' : (s / 60).toFixed(1) + ' min'; }
+            function render() {
+                var totals = spec.map(function (s) {
+                    var n = Number(document.getElementById(s.id).value);
+                    document.getElementById(s.out).textContent = n;
+                    return n * s.secs;
+                });
+                var grand = totals.reduce(function (a, b) { return a + b; }, 0);
+                var max = Math.max(grand, 0.001);
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                spec.forEach(function (s, i) {
+                    var y = 14 + i * 44;
+                    var r = document.createElementNS(NS, 'rect');
+                    r.setAttribute('x', 140); r.setAttribute('y', y); r.setAttribute('height', 30);
+                    r.setAttribute('width', Math.max(2, totals[i] / max * 640)); r.setAttribute('rx', 6);
+                    r.setAttribute('fill', s.color); svg.appendChild(r);
+                    var t = document.createElementNS(NS, 'text');
+                    t.setAttribute('x', 132); t.setAttribute('y', y + 20); t.setAttribute('text-anchor', 'end');
+                    t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = s.label;
+                    svg.appendChild(t);
+                    var v = document.createElementNS(NS, 'text');
+                    v.setAttribute('x', 148 + Math.max(2, totals[i] / max * 640)); v.setAttribute('y', y + 20);
+                    v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = fmt(totals[i]);
+                    svg.appendChild(v);
+                });
+                var unitPct = grand ? Math.round(totals[0] / grand * 100) : 0;
+                var e2ePct = grand ? Math.round(totals[2] / grand * 100) : 0;
+                status.textContent = '总耗时约 ' + fmt(grand) + '：单元占 ' + unitPct + '%，E2E 占 ' + e2ePct + '%。' +
+                    (e2ePct > 50 ? ' E2E 已主导耗时——测试套件正在变成倒金字塔，考虑把部分验证下沉到下层。' : ' 当前各层比例相对健康。');
+            }
+            var PRESETS = { pyramid: [280, 80, 40], inverted: [40, 60, 30] };
+            Array.prototype.slice.call(document.querySelectorAll('[data-preset]')).forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var p = PRESETS[b.getAttribute('data-preset')];
+                    spec.forEach(function (s, i) { document.getElementById(s.id).value = p[i]; });
+                    render();
+                });
+            });
+            spec.forEach(function (s) { document.getElementById(s.id).addEventListener('input', render); });
+            render();
+        })();
+        </script>
+
         <h2>单元测试最佳实践：AAA 模式与测试替身</h2>
 
         <p>单元测试虽然是金字塔的基石，但很多开发者写单元测试的方式是错误的——测试太脆弱、太依赖实现细节、或者测试了不该测的东西。下面介绍两个最重要的实践。</p>
