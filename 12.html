@@ -367,6 +367,28 @@ func (h ConsumerHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sa
             <li><strong>队列 → 消费者：</strong>消费者处理完消息后显式 ACK。如果消费者在 ACK 之前崩溃，消息会被重新投递给其他消费者。</li>
         </ul>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig12b-title fig12b-desc" viewBox="0 0 840 265" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig12b-title">消息传递链路上的三个丢失点与死信队列</title>
+                <desc id="fig12b-desc">消息从生产者经生产者确认发往 Broker，在 Broker 持久化，再投递给消费者并由消费者显式 ACK；重试超限的消息进入死信队列，避免阻塞正常消息。</desc>
+                <defs>
+                    <marker id="fig12b-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#334155"/></marker>
+                    <marker id="fig12b-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b91c1c"/></marker>
+                </defs>
+                <rect x="0" y="0" width="840" height="265" rx="16" fill="#f8fafc"/>
+                <text x="420" y="28" text-anchor="middle" font-size="18" fill="#1e3a5f">消息链路上的三个丢失点（教学示意）</text>
+                <rect x="30" y="80" width="150" height="64" rx="12" fill="#dbeafe" stroke="#93c5fd"/><text x="105" y="117" text-anchor="middle" font-size="14">生产者</text>
+                <rect x="330" y="80" width="180" height="64" rx="12" fill="#dcfce7" stroke="#86efac"/><text x="420" y="108" text-anchor="middle" font-size="14">Broker / 队列</text><text x="420" y="130" text-anchor="middle" font-size="12" fill="#475569">② 持久化到磁盘</text>
+                <rect x="620" y="80" width="180" height="64" rx="12" fill="#ede9fe" stroke="#c4b5fd"/><text x="710" y="117" text-anchor="middle" font-size="14">消费者</text>
+                <g stroke="#334155" stroke-width="2" marker-end="url(#fig12b-a)"><line x1="180" y1="112" x2="326" y2="112"/><line x1="510" y1="112" x2="616" y2="112"/></g>
+                <g font-size="12" fill="#1e293b"><text x="253" y="102" text-anchor="middle">① 生产者确认</text><text x="253" y="132" text-anchor="middle" fill="#475569">acks=all / confirm</text><text x="563" y="102" text-anchor="middle">③ 消费后显式 ACK</text><text x="563" y="132" text-anchor="middle" fill="#475569">未 ACK 前崩溃则重投</text></g>
+                <rect x="330" y="195" width="180" height="50" rx="12" fill="#fee2e2" stroke="#fca5a5"/><text x="420" y="225" text-anchor="middle" font-size="13" fill="#7f1d1d">死信队列 DLQ</text>
+                <path d="M710 144 L710 220 L514 220" fill="none" stroke="#b91c1c" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#fig12b-red)"/>
+                <text x="620" y="212" text-anchor="middle" font-size="12" fill="#b91c1c">重试超限</text>
+            </svg>
+            <figcaption>三个丢失点各不相同：① 靠生产者确认保证“发出去了”，② 靠持久化保证“存住了”，③ 靠消费后显式 ACK 保证“处理完了”；崩溃发生在 ③ 的 ACK 之前时，消息会被重投（至少一次）。重试超限的消息转入死信队列，避免在队头反复重试、阻塞后续消息。</figcaption>
+        </figure>
+
         <p><strong>死信队列（DLQ, Dead Letter Queue）</strong>是处理消费失败消息的标准模式。当一条消息重试多次后仍然失败，它会被移入一个专门的"死信队列"中，由人工或自动化系统分析处理。死信队列的配置非常重要——如果没有它，失败的消息会在队列头部反复重试，阻塞后续所有消息的处理。</p>
 
         <div class="warning">
