@@ -410,6 +410,35 @@ Response:
             <li><strong>授权服务器返回 Access Token</strong>（也可能同时返回 Refresh Token）。之后，客户端就可以用这个 Token 访问受保护的资源。</li>
         </ol>
 
+        <figure>
+            <svg role="img" aria-labelledby="fig09b-title fig09b-desc" viewBox="0 0 840 310" xmlns="http://www.w3.org/2000/svg">
+                <title id="fig09b-title">OAuth 2.0 授权码流程的时序</title>
+                <desc id="fig09b-desc">浏览器、客户端后端、授权服务器三条生命周期：浏览器只接触授权码，客户端后端在后台用授权码加 client_secret 和 code_verifier 换取 Token，授权码和密钥不暴露给浏览器。</desc>
+                <defs>
+                    <marker id="fig09b-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2563eb"/></marker>
+                    <marker id="fig09b-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#16a34a"/></marker>
+                </defs>
+                <rect x="0" y="0" width="840" height="310" rx="16" fill="#f8fafc"/>
+                <text x="420" y="28" text-anchor="middle" font-size="18" fill="#1e3a5f">OAuth 2.0 授权码流程（教学示意）</text>
+                <g stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 6">
+                    <line x1="170" y1="56" x2="170" y2="292"/><line x1="420" y1="56" x2="420" y2="292"/><line x1="670" y1="56" x2="670" y2="292"/>
+                </g>
+                <g font-size="14" fill="#1e3a5f" text-anchor="middle"><text x="170" y="50">用户 / 浏览器</text><text x="420" y="50">客户端后端</text><text x="670" y="50">授权服务器</text></g>
+                <g stroke-width="2" marker-end="url(#fig09b-blue)" stroke="#2563eb"><line x1="170" y1="96" x2="670" y2="96"/><line x1="670" y1="140" x2="170" y2="140"/></g>
+                <g stroke-width="2" marker-end="url(#fig09b-green)" stroke="#16a34a"><line x1="420" y1="192" x2="670" y2="192"/><line x1="670" y1="236" x2="420" y2="236"/></g>
+                <g stroke="#64748b" stroke-width="2" marker-end="url(#fig09b-green)"><line x1="420" y1="280" x2="170" y2="280"/></g>
+                <g font-size="13" fill="#1e293b">
+                    <text x="420" y="89" text-anchor="middle">① 重定向 /authorize（client_id, redirect_uri, code_challenge）</text>
+                    <text x="420" y="133" text-anchor="middle">② 登录授权后重定向回 redirect_uri?code=…</text>
+                    <text x="545" y="185" text-anchor="middle">③ 后端 POST /token（code + secret + verifier）</text>
+                    <text x="545" y="229" text-anchor="middle">④ access_token（+ refresh_token）</text>
+                    <text x="295" y="273" text-anchor="middle" fill="#475569">⑤ 建立登录会话</text>
+                </g>
+                <text x="420" y="304" text-anchor="middle" font-size="12" fill="#64748b">蓝色=前端可见的前台通道；绿色=后端专用后台通道，密钥不出服务器</text>
+            </svg>
+            <figcaption>授权码流程把敏感交换拆成两条通道：浏览器只在前台通道传递一次性的授权码，真正换 Token 的请求在后台通道（客户端后端 → 授权服务器）完成，<code>client_secret</code> 从不进入浏览器。带 PKCE 时，步骤③额外带上步骤①中 <code>code_challenge</code> 对应的 <code>code_verifier</code>。</figcaption>
+        </figure>
+
         <p>2026 年的最佳实践已经普遍采用 <strong>PKCE（Proof Key for Code Exchange）</strong> 扩展，即使是移动端或单页应用（无法安全保存 <code>client_secret</code>）也能安全使用授权码流程。PKCE 的核心是客户端在第一步生成一个 <code>code_verifier</code> 和对应的 <code>code_challenge</code>，第三步再用 <code>code_verifier</code> 来证明"我就是发起流程的那个人"。这防止了授权码被截获后的重放攻击。</p>
 
         <div class="highlight">
