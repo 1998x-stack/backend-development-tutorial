@@ -398,6 +398,71 @@ func initMeter() (*sdkmetric.MeterProvider, error) {
             <figcaption>瀑布图把总耗时拆到每一跳：SQL 占 180ms 是主要瓶颈，redis 只花 15ms。有了 traceId 串联，跨服务延迟不再靠盲猜，而是可比较的数值。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>下面把上文 JSON 示例里的 5 个 span 画成可点的瀑布图。点击任一 span，看它占根请求（1240）的比例——与正文“瓶颈在 SQL 查询”的结论互相印证（时长沿用正文毫秒口径，<strong>教学示意</strong>）。
+        </div>
+        <div class="control-row" role="group" aria-label="选择 trace span">
+            <button type="button" data-span="0" aria-pressed="true">POST /api/orders</button>
+            <button type="button" data-span="1" aria-pressed="false">validateOrder</button>
+            <button type="button" data-span="2" aria-pressed="false">checkInventory gRPC</button>
+            <button type="button" data-span="3" aria-pressed="false">SELECT FROM inventory</button>
+            <button type="button" data-span="4" aria-pressed="false">createPayment</button>
+        </div>
+        <p class="status" id="sp-status" aria-live="polite"></p>
+        <figure>
+            <svg id="sp-bars" role="img" aria-labelledby="fig24b-title" viewBox="0 0 840 230" xmlns="http://www.w3.org/2000/svg"><title id="fig24b-title">示例 trace 中各 span 的耗时及其占根请求的比例</title></svg>
+            <figcaption>横条长度按 span 耗时绘制（根请求 1240 为上限）。选中项高亮，状态栏给出它占根请求的比例，帮助定位哪一跳是瓶颈。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var ROOT = 1240, NS = 'http://www.w3.org/2000/svg';
+            var SPANS = [
+                { name: 'POST /api/orders', dur: 1240, depth: 0 },
+                { name: 'validateOrder', dur: 45, depth: 1 },
+                { name: 'checkInventory gRPC', dur: 1120, depth: 1 },
+                { name: 'SELECT FROM inventory', dur: 980, depth: 2 },
+                { name: 'createPayment', dur: 300, depth: 1 }
+            ];
+            var selected = 0;
+            var svg = document.getElementById('sp-bars');
+            var status = document.getElementById('sp-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-span]'));
+            function fmt(s) {
+                return '当前选中「' + SPANS[selected].name + '」：耗时 ' + SPANS[selected].dur + '（根请求 1240），占 ' +
+                    Math.round(SPANS[selected].dur / ROOT * 100) + '%。' +
+                    (selected === 3 || selected === 2 ? ' 这一跳占根请求八成以上，是真正的瓶颈。' : ' 占比不大，不是主要瓶颈。');
+            }
+            function render() {
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                SPANS.forEach(function (sp, i) {
+                    var y = 16 + i * 42, on = i === selected;
+                    var r = document.createElementNS(NS, 'rect');
+                    r.setAttribute('x', 210 + sp.depth * 20); r.setAttribute('y', y); r.setAttribute('height', 30);
+                    r.setAttribute('width', Math.max(2, sp.dur / ROOT * 600)); r.setAttribute('rx', 6);
+                    r.setAttribute('fill', on ? '#f59e0b' : (sp.dur > ROOT / 2 ? '#fca5a5' : '#93c5fd'));
+                    svg.appendChild(r);
+                    var t = document.createElementNS(NS, 'text');
+                    t.setAttribute('x', 202); t.setAttribute('y', y + 20); t.setAttribute('text-anchor', 'end');
+                    t.setAttribute('font-size', '12'); t.setAttribute('fill', on ? '#92400e' : '#334155');
+                    t.textContent = sp.name; svg.appendChild(t);
+                    var v = document.createElementNS(NS, 'text');
+                    v.setAttribute('x', 218 + sp.depth * 20 + Math.max(2, sp.dur / ROOT * 600)); v.setAttribute('y', y + 20);
+                    v.setAttribute('font-size', '12'); v.setAttribute('fill', '#1e3a5f'); v.textContent = sp.dur + ' ms';
+                    svg.appendChild(v);
+                });
+                status.textContent = fmt();
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    selected = Number(b.getAttribute('data-span'));
+                    btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+                    render();
+                });
+            });
+            render();
+        })();
+        </script>
+
         <h2>eBPF 零侵入可观测：Cilium Hubble 网络观测、Pixie 应用性能</h2>
 
         <p>传统可观测性有一个根本性的问题：<strong>需要侵入应用代码</strong>。你要用 OTel SDK 改造代码，要手动添加 Span，要在日志库中注入 Trace ID。对于已经在跑的老系统——尤其是第三方闭源服务、遗留 Java 应用、或者你根本不拥有源码的中间件——这种侵入式方案几乎不可行。</p>

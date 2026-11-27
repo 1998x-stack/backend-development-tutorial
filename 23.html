@@ -325,6 +325,60 @@
             <figcaption>与 CI 把改动“推”进集群不同，GitOps 让集群内的控制器“拉”Git 期望状态：权限更小、审计更清、集群重建时可从 Git 复原。漂移检测是把实际状态拉回期望状态的关键。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>持续协调的核心是“实际状态 ≠ 期望状态”时拉回。下面用三个字段模拟：先手动篡改集群造成漂移，再触发协调，看 Git 如何把它拉回（<strong>教学示意</strong>）。
+        </div>
+        <div class="control-row" role="group" aria-label="GitOps 协调操作">
+            <button type="button" id="g-drift">手动篡改集群（引入漂移）</button>
+            <button type="button" id="g-commit">Git 提新版本（更新期望）</button>
+            <button type="button" id="g-sync">触发协调（Reconcile）</button>
+        </div>
+        <p class="status" id="g-status" aria-live="polite"></p>
+        <table>
+            <caption style="text-align:left;color:#475569;font-size:.9rem;padding:.4rem 0;">期望状态（Git）vs 实际状态（集群）</caption>
+            <thead><tr><th>字段</th><th>期望（Git）</th><th>实际（集群）</th><th>状态</th></tr></thead>
+            <tbody id="g-body"></tbody>
+        </table>
+        <script>
+        (function () {
+            var desired = { replicas: '3', image: 'v2.5', cpuLimit: '1' };
+            var live = { replicas: '3', image: 'v2.5', cpuLimit: '1' };
+            var FIELDS = ['replicas', 'image', 'cpuLimit'];
+            var driftCount = 0;
+            var body = document.getElementById('g-body');
+            var status = document.getElementById('g-status');
+            function render() {
+                body.innerHTML = '';
+                var drifts = 0;
+                FIELDS.forEach(function (f) {
+                    var same = desired[f] === live[f];
+                    if (!same) drifts++;
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + f + '</td><td>' + desired[f] + '</td><td>' + live[f] + '</td>' +
+                        '<td>' + (same ? '✅ 一致' : '⚠️ 漂移') + '</td>';
+                    body.appendChild(tr);
+                });
+                driftCount = drifts;
+                status.textContent = drifts === 0
+                    ? '实际状态与 Git 期望一致，无需协调。'
+                    : '检测到 ' + drifts + ' 项漂移；下一轮协调会把集群拉回 Git 定义的样子。';
+            }
+            document.getElementById('g-drift').addEventListener('click', function () {
+                live.replicas = '5'; live.image = 'v2.4'; live.cpuLimit = '2';
+                render();
+            });
+            document.getElementById('g-commit').addEventListener('click', function () {
+                desired.image = 'v2.6'; desired.replicas = '4';
+                render();
+            });
+            document.getElementById('g-sync').addEventListener('click', function () {
+                FIELDS.forEach(function (f) { live[f] = desired[f]; });
+                render();
+            });
+            render();
+        })();
+        </script>
+
         <h2>ArgoCD 实战：Application / AppProject、Sync 策略、差异可视化</h2>
 
         <p>ArgoCD 是当前最流行的 GitOps 工具，CNCF 毕业项目，几乎成了 GitOps 的代名词。它的核心概念非常清晰：<strong>Application（应用）</strong> 是 ArgoCD 的最小管理单元，它定义了一个 Git 仓库中的路径与目标集群/命名空间的映射关系。</p>
