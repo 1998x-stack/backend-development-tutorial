@@ -362,6 +362,76 @@ spec:
             <figcaption>HPA 不是凭空预测，而是“当前值 vs 目标值”的比例闭环：使用率高于目标就加副本，低于则减。设置合理的 requests 与冷却窗口，才能避免频繁震荡。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>HPA 的目标副本数约为 <code>ceil(当前副本 × 当前使用率 / 目标使用率)</code>（目标 70%，来自上文 YAML）。拖动当前副本与 CPU 使用率，看期望值与受 behavior 限制后的本次实际调整（<strong>教学示意</strong>，非真实控制器输出）。
+        </div>
+        <p><label for="hpa-r">当前副本数：</label> <input id="hpa-r" type="range" min="1" max="20" step="1" value="3"> <output for="hpa-r" id="hpa-r-out">3</output></p>
+        <p><label for="hpa-u">当前 CPU 使用率：</label> <input id="hpa-u" type="range" min="0" max="200" step="5" value="140"> <output for="hpa-u" id="hpa-u-out">140</output>%</p>
+        <div class="control-row" role="group" aria-label="HPA 场景预设">
+            <button type="button" data-preset="peak">流量洪峰</button>
+            <button type="button" data-preset="normal">刚好达标</button>
+            <button type="button" data-preset="idle">空闲低谷</button>
+        </div>
+        <p class="status" id="hpa-status" aria-live="polite"></p>
+        <figure>
+            <svg id="hpa-bars" role="img" aria-labelledby="fig22b-title" viewBox="0 0 840 160" xmlns="http://www.w3.org/2000/svg"><title id="fig22b-title">HPA 当前副本、目标副本与本次实际调整后的副本数对比</title></svg>
+            <figcaption>目标副本由使用率比例算出；实际调整还受 scaleUp 翻倍、scaleDown 冷却窗口等 behavior 约束，不会一步到位。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var TARGET = 70, MAX = 20;
+            var r = document.getElementById('hpa-r'), u = document.getElementById('hpa-u');
+            var rO = document.getElementById('hpa-r-out'), uO = document.getElementById('hpa-u-out');
+            var status = document.getElementById('hpa-status');
+            var svg = document.getElementById('hpa-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var PRESETS = { peak: [3, 140], normal: [5, 70], idle: [8, 20] };
+            function bar(y, label, val, max, color) {
+                var b = document.createElementNS(NS, 'rect');
+                b.setAttribute('x', 150); b.setAttribute('y', y); b.setAttribute('height', 32);
+                b.setAttribute('width', Math.max(2, val / max * 580)); b.setAttribute('rx', 6);
+                b.setAttribute('fill', color); svg.appendChild(b);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 142); t.setAttribute('y', y + 21); t.setAttribute('text-anchor', 'end');
+                t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = label; svg.appendChild(t);
+                var v = document.createElementNS(NS, 'text');
+                v.setAttribute('x', 158 + Math.max(2, val / max * 580)); v.setAttribute('y', y + 21);
+                v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = val + ' 个';
+                svg.appendChild(v);
+            }
+            function render() {
+                var R = Number(r.value), util = Number(u.value);
+                rO.textContent = R; uO.textContent = util;
+                var raw = Math.ceil(R * util / TARGET);
+                var desired = Math.max(0, Math.min(MAX, raw));
+                var applied = R, note;
+                if (desired > R) {
+                    applied = Math.min(desired, R * 2);   // scaleUp：每次最多翻倍
+                    note = applied < desired ? '受 scaleUp 限制（一次最多翻倍），逐步逼近目标。' : '可直接扩容到目标。';
+                } else if (desired < R) {
+                    applied = R;                          // scaleDown：300s 稳定窗口内不缩容
+                    note = 'scaleDown 有 300s 稳定窗口，本步先不缩，避免波谷误缩。';
+                } else {
+                    note = '使用率正好命中目标，保持副本数不变。';
+                }
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                var max = Math.max(R, desired, applied, 1);
+                bar(20, '当前', R, max, '#93c5fd');
+                bar(64, '目标', desired, max, '#34d399');
+                bar(108, '本次', applied, max, '#fbbf24');
+                status.textContent = '当前 ' + R + ' 副本 / CPU ' + util + '% → 目标 ' + desired + ' 副本（' + R + ' × ' + util + '% ÷ ' + TARGET + '%）；本次调整为 ' + applied + ' 副本。' + note;
+            }
+            [r, u].forEach(function (el) { el.addEventListener('input', render); });
+            Array.prototype.slice.call(document.querySelectorAll('[data-preset]')).forEach(function (bt) {
+                bt.addEventListener('click', function () {
+                    var p = PRESETS[bt.getAttribute('data-preset')];
+                    r.value = p[0]; u.value = p[1]; render();
+                });
+            });
+            render();
+        })();
+        </script>
+
         <h2>健康检查：liveness vs readiness vs startup probe</h2>
 
         <p>K8s 提供了三种探针来监控容器健康状态。区分三者的用途，是 K8s 生产运维中最基础但也最容易被搞混的知识点之一。</p>

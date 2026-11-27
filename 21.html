@@ -454,6 +454,77 @@ spec:
             <figcaption>PVC 只描述需求，PV 才是真实存储；StorageClass 负责在 PVC 创建时动态制备 PV。这套“声明—绑定—供给”把存储细节与业务解耦，Pod 重建后数据依然存在。</figcaption>
         </figure>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>删掉一个被使用的 PVC 后，数据是保留还是销毁，取决于 StorageClass 的 <code>reclaimPolicy</code>。切换策略并模拟事件，看 PV 的生命周期走到哪一步（状态机为<strong>教学示意</strong>，已简化）。
+        </div>
+        <div class="control-row" role="group" aria-label="选择回收策略">
+            <button type="button" data-policy="Retain" aria-pressed="true">reclaimPolicy: Retain</button>
+            <button type="button" data-policy="Delete" aria-pressed="false">reclaimPolicy: Delete</button>
+            <button type="button" id="pv-claim">创建 PVC 并绑定</button>
+            <button type="button" id="pv-del">删除 PVC</button>
+        </div>
+        <p class="status" id="pv-status" aria-live="polite"></p>
+        <figure>
+            <svg id="pv-fsm" role="img" aria-labelledby="fig21b-title" viewBox="0 0 840 140" xmlns="http://www.w3.org/2000/svg"><title id="fig21b-title">PV 在 PVC 创建与删除事件下的生命周期状态</title></svg>
+            <figcaption>状态随事件与回收策略变化：Retain 让 PV 停在 Released（数据尚在，需人工处理），Delete 则直接销毁 PV。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var STATES = ['Available', 'Bound', 'Released', 'Deleted'];
+            var DESC = {
+                Available: 'PV 已创建但尚未被任何 PVC 绑定。',
+                Bound: 'PVC 声明了需求，PV 与其绑定，Pod 可挂载使用。',
+                Released: 'PVC 已删除，但 reclaimPolicy=Retain：PV 保留、数据仍在，需人工回收（删除或重新绑定）。',
+                Deleted: 'PVC 已删除，reclaimPolicy=Delete：PV 连同后端存储被销毁，数据丢失。'
+            };
+            var policy = 'Retain', state = 'Available';
+            var pvStatus = document.getElementById('pv-status');
+            var svg = document.getElementById('pv-fsm');
+            var NS = 'http://www.w3.org/2000/svg';
+            function render() {
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                STATES.forEach(function (name, i) {
+                    var x = 20 + i * 205, active = name === state;
+                    var box = document.createElementNS(NS, 'rect');
+                    box.setAttribute('x', x); box.setAttribute('y', 45); box.setAttribute('width', 180); box.setAttribute('height', 56);
+                    box.setAttribute('rx', 12);
+                    box.setAttribute('fill', active ? '#fef9c3' : '#f1f5f9');
+                    box.setAttribute('stroke', active ? '#f59e0b' : '#cbd5e1');
+                    box.setAttribute('stroke-width', active ? '3' : '1');
+                    svg.appendChild(box);
+                    var t = document.createElementNS(NS, 'text');
+                    t.setAttribute('x', x + 90); t.setAttribute('y', 78); t.setAttribute('text-anchor', 'middle');
+                    t.setAttribute('font-size', '15'); t.setAttribute('fill', active ? '#92400e' : '#475569');
+                    t.textContent = name; svg.appendChild(t);
+                    if (i < STATES.length - 1) {
+                        var a = document.createElementNS(NS, 'text');
+                        a.setAttribute('x', x + 190); a.setAttribute('y', 78); a.setAttribute('text-anchor', 'middle');
+                        a.setAttribute('font-size', '18'); a.setAttribute('fill', '#94a3b8'); a.textContent = '→'; svg.appendChild(a);
+                    }
+                });
+                pvStatus.textContent = '策略 ' + policy + ' · 当前 PV 状态：' + state + '。' + DESC[state];
+            }
+            Array.prototype.slice.call(document.querySelectorAll('[data-policy]')).forEach(function (b) {
+                b.addEventListener('click', function () {
+                    policy = b.getAttribute('data-policy');
+                    Array.prototype.slice.call(document.querySelectorAll('[data-policy]')).forEach(function (o) {
+                        o.setAttribute('aria-pressed', String(o === b));
+                    });
+                    render();
+                });
+            });
+            document.getElementById('pv-claim').addEventListener('click', function () {
+                state = state === 'Deleted' ? 'Available' : 'Bound';
+                render();
+            });
+            document.getElementById('pv-del').addEventListener('click', function () {
+                if (state === 'Bound') { state = policy === 'Retain' ? 'Released' : 'Deleted'; }
+                render();
+            });
+            render();
+        })();
+        </script>
+
         <h2>CSI 存储插件选型：云原生存储的分类与选择</h2>
 
         <p>CSI（Container Storage Interface）是 K8s 的存储插件标准，所有现代存储系统都通过 CSI 驱动与 K8s 集成。选择合适的存储系统，需要理解三类主要的云原生存储：</p>
