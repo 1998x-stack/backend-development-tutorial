@@ -305,6 +305,10 @@
                 <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="DIP"> 高层模块直接依赖具体实现，难替换、难测试</label>
             </fieldset>
         </form>
+        <div class="control-row" role="group" aria-label="症状自查预设">
+            <button type="button" data-solid="all">全部命中</button>
+            <button type="button" data-solid="none">全部清除</button>
+        </div>
         <p class="status" id="solid-status" aria-live="polite"></p>
         <figure>
             <svg id="solid-chart" role="img" aria-labelledby="fig07b-title" viewBox="0 0 840 210" xmlns="http://www.w3.org/2000/svg"><title id="fig07b-title">五条 SOLID 原则对应的症状命中选择情况</title></svg>
@@ -361,6 +365,13 @@
                     : '命中 ' + hitList.length + ' 条原则：' + hitList.join('、') + '。重构时优先看交叉最多的那条，一次改动收益最大。';
             }
             boxes.forEach(function (b) { b.addEventListener('change', render); });
+            Array.prototype.slice.call(document.querySelectorAll('[data-solid]')).forEach(function (bt) {
+                bt.addEventListener('click', function () {
+                    var on = bt.getAttribute('data-solid') === 'all';
+                    boxes.forEach(function (b) { b.checked = on; });
+                    render();
+                });
+            });
             render();
         })();
         </script>
