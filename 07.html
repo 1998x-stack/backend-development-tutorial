@@ -292,6 +292,79 @@
             <strong>🎯 实践指南：</strong>SOLID 不是必须遵守的宗教信条，它是判断设计质量的"嗅觉工具"。当你闻到代码有"坏味道"——一个类改了又改、接口臃肿不堪、改了一个地方炸了三个地方——翻出 SOLID 原则对照一下，通常能找到病根。对于后端开发，<strong>SRP 和 DIP 是性价比最高的两个原则</strong>——前者让你的代码好理解，后者让你的代码可测试。
         </div>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>SOLID 是“嗅觉工具”。勾选你代码里真实出现过的症状，看看它们分别指向哪条原则——一个症状可能对应多条，优先先修交叉最多的那个。
+        </div>
+        <form id="solid-form" aria-label="SOLID 症状自查">
+            <fieldset style="border:1px solid #cbd5e1;border-radius:12px;padding:.75rem 1rem;margin:1rem 0;">
+                <legend style="padding:0 .4rem;color:#1e3a5f;font-weight:600;">代码症状自查</legend>
+                <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="SRP"> 一个类/模块承担很多职责，改一处常影响到别处</label>
+                <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="OCP"> 每新增一个功能都要改核心类，核心越来越臃肿</label>
+                <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="LSP"> 调用方需要判断具体实现类型，多态失效</label>
+                <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="ISP"> 实现类被迫实现空方法或抛异常</label>
+                <label style="display:block;margin:.4rem 0;"><input type="checkbox" data-p="DIP"> 高层模块直接依赖具体实现，难替换、难测试</label>
+            </fieldset>
+        </form>
+        <p class="status" id="solid-status" aria-live="polite"></p>
+        <figure>
+            <svg id="solid-chart" role="img" aria-labelledby="fig07b-title" viewBox="0 0 840 210" xmlns="http://www.w3.org/2000/svg"><title id="fig07b-title">五条 SOLID 原则对应的症状命中选择情况</title></svg>
+            <figcaption>五条原则各自命中的症状：命中越多，越值得优先考虑重构。方法为教学示意，不是度量工具。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var LABEL = {
+                SRP: 'SRP 单一职责',
+                OCP: 'OCP 开闭原则',
+                LSP: 'LSP 里氏替换',
+                ISP: 'ISP 接口隔离',
+                DIP: 'DIP 依赖倒置'
+            };
+            var FIX = {
+                SRP: '把类拆成职责单一的模块，例如把“发邮件/生成 PDF”从 UserService 移出。',
+                OCP: '把变化点提取为接口/策略，新增支付渠道时不再动核心类。',
+                LSP: '让接口契约稳定，调用方只依赖抽象，不再按实现分支。',
+                ISP: '拆出小而专的接口（如 UserReader / UserWriter），不强迫实现空方法。',
+                DIP: '让高层依赖接口而非具体实现，在构造函数注入替身。'
+            };
+            var ORDER = ['SRP', 'OCP', 'LSP', 'ISP', 'DIP'];
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('#solid-form input'));
+            var out = document.getElementById('solid-status');
+            var svg = document.getElementById('solid-chart');
+            var NS = 'http://www.w3.org/2000/svg';
+            function render() {
+                var hit = {};
+                ORDER.forEach(function (p) { hit[p] = 0; });
+                boxes.forEach(function (b) { if (b.checked) { hit[b.getAttribute('data-p')]++; } });
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                ORDER.forEach(function (p, i) {
+                    var y = 16 + i * 38;
+                    var on = hit[p] > 0;
+                    var bar = document.createElementNS(NS, 'rect');
+                    bar.setAttribute('x', 170); bar.setAttribute('y', y); bar.setAttribute('height', 24);
+                    bar.setAttribute('width', on ? 300 : 6); bar.setAttribute('rx', 6);
+                    bar.setAttribute('fill', on ? '#f59e0b' : '#cbd5e1');
+                    svg.appendChild(bar);
+                    var t = document.createElementNS(NS, 'text');
+                    t.setAttribute('x', 162); t.setAttribute('y', y + 17); t.setAttribute('text-anchor', 'end');
+                    t.setAttribute('font-size', '14'); t.setAttribute('fill', on ? '#b45309' : '#94a3b8');
+                    t.textContent = LABEL[p];
+                    svg.appendChild(t);
+                    var v = document.createElementNS(NS, 'text');
+                    v.setAttribute('x', 480); v.setAttribute('y', y + 17); v.setAttribute('font-size', '13');
+                    v.setAttribute('fill', on ? '#92400e' : '#94a3b8');
+                    v.textContent = on ? '命中，建议：' + FIX[p] : '未命中';
+                    svg.appendChild(v);
+                });
+                var hitList = ORDER.filter(function (p) { return hit[p] > 0; });
+                out.textContent = hitList.length === 0
+                    ? '暂未发现明显坏味道：五条症状都没勾选。'
+                    : '命中 ' + hitList.length + ' 条原则：' + hitList.join('、') + '。重构时优先看交叉最多的那条，一次改动收益最大。';
+            }
+            boxes.forEach(function (b) { b.addEventListener('change', render); });
+            render();
+        })();
+        </script>
+
         <h2>贫血模型 vs 充血模型</h2>
 
         <p>这是 Martin Fowler 在《企业应用架构模式》中提出的一对经典概念，也是后端开发中争论最多的话题之一。</p>

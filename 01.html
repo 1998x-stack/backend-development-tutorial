@@ -351,6 +351,64 @@
             <strong>🗺️ 路线参考：</strong>本课程不会假设你一定要从单体起步。但理解这条演进路径，能让你在看到任何后端架构时都清楚它处于哪个阶段、面临什么问题、下一站应该往哪走。
         </div>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>演进不是“越新越好”，而是不同维度的取舍。下面用四个定性刻度（<strong>部署单元数</strong>、<strong>运维复杂度</strong>、<strong>单次调用延迟</strong>、<strong>弹性速度</strong>）并排对比四种架构。刻度为<strong>教学示意</strong>（0–100 相对值，非真实基准测试），用来建立直觉而非精确排名。
+        </div>
+        <div class="control-row" role="group" aria-label="选择后端架构">
+            <button type="button" data-arch="mono" aria-pressed="true">单体</button>
+            <button type="button" data-arch="soa" aria-pressed="false">SOA</button>
+            <button type="button" data-arch="micro" aria-pressed="false">微服务</button>
+            <button type="button" data-arch="sless" aria-pressed="false">Serverless</button>
+        </div>
+        <p class="status" id="arch-status" aria-live="polite"></p>
+        <figure>
+            <svg id="arch-chart" role="img" aria-labelledby="fig01b-title" viewBox="0 0 840 250" xmlns="http://www.w3.org/2000/svg"><title id="fig01b-title">四种后端架构在部署单元、运维复杂度、调用延迟、弹性速度四个维度上的相对刻度</title></svg>
+            <figcaption>各维度是相互权衡的：拆得越细，弹性越好，但部署单元与运维成本越高。刻度为教学示意，用于比较相对趋势。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var DIMS = ['部署单元数', '运维复杂度', '调用延迟', '弹性速度'];
+            var DATA = {
+                mono:  { name: '单体',       v: [10, 20, 15, 10], note: '一个包整体部署、整体扩容，开发和调试最简单，但局部改动也要全量发布。' },
+                soa:   { name: 'SOA',        v: [45, 85, 60, 35], note: '服务复用理念先进，但中心化 ESB 成为单点与瓶颈，SOAP/XML 协议栈沉重。' },
+                micro: { name: '微服务',     v: [75, 60, 40, 75], note: '服务独立部署、独立伸缩，代价是分布式事务、服务发现与链路可观测性。' },
+                sless: { name: 'Serverless', v: [90, 25, 70, 95], note: '无需管基础设施、秒级弹性，但受冷启动、无状态与厂商绑定约束。' }
+            };
+            var svg = document.getElementById('arch-chart');
+            var out = document.getElementById('arch-status');
+            var btns = Array.prototype.slice.call(document.querySelectorAll('[data-arch]'));
+            var NS = 'http://www.w3.org/2000/svg';
+            function render(key) {
+                var d = DATA[key];
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                DIMS.forEach(function (dim, i) {
+                    var y = 20 + i * 54;
+                    var bar = document.createElementNS(NS, 'rect');
+                    bar.setAttribute('x', 140); bar.setAttribute('y', y); bar.setAttribute('height', 26);
+                    bar.setAttribute('width', Math.max(2, d.v[i] / 100 * 640)); bar.setAttribute('rx', 6);
+                    bar.setAttribute('fill', d.v[i] >= 70 ? '#f59e0b' : '#60a5fa');
+                    svg.appendChild(bar);
+                    var lb = document.createElementNS(NS, 'text');
+                    lb.setAttribute('x', 132); lb.setAttribute('y', y + 18); lb.setAttribute('text-anchor', 'end');
+                    lb.setAttribute('font-size', '14'); lb.setAttribute('fill', '#334155'); lb.textContent = dim;
+                    svg.appendChild(lb);
+                    var vl = document.createElementNS(NS, 'text');
+                    vl.setAttribute('x', 148 + Math.max(2, d.v[i] / 100 * 640)); vl.setAttribute('y', y + 18);
+                    vl.setAttribute('font-size', '13'); vl.setAttribute('fill', '#1e3a5f'); vl.textContent = d.v[i];
+                    svg.appendChild(vl);
+                });
+                out.textContent = '当前：' + d.name + ' — ' + d.note;
+            }
+            btns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+                    render(b.getAttribute('data-arch'));
+                });
+            });
+            render('mono');
+        })();
+        </script>
+
         <h2>2026 年技术栈总览</h2>
 
         <p>后端技术栈的生态已经极其庞大，初学者最常问的问题就是"我该学什么？"下面这张表帮你梳理了 2026 年各领域的主流选择。注意：没有"最好"的技术，只有"最适合当前场景"的选择。</p>
