@@ -315,6 +315,64 @@ fn handle_request(req: HttpRequest) -> HttpResponse {
     }
 }</code></pre>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>启动开销在频繁冷启动时会累加。用上表的量级（Wasm ~50μs、容器 ~100ms）估算，拖动触发次数，看两者累计的启动延迟差距（<strong>教学示意</strong>，未计入运行时与网络）。
+        </div>
+        <p><label for="cs-n">伸缩触发（冷启动）次数：</label> <input id="cs-n" type="range" min="1" max="2000" step="1" value="200"> <output for="cs-n" id="cs-n-out">200</output></p>
+        <div class="control-row" role="group" aria-label="冷启动场景">
+            <button type="button" data-preset="low">低频（10 次）</button>
+            <button type="button" data-preset="high">突发（1000 次）</button>
+        </div>
+        <p class="status" id="cs-status" aria-live="polite"></p>
+        <figure>
+            <svg id="cs-bars" role="img" aria-labelledby="fig27b-title" viewBox="0 0 840 130" xmlns="http://www.w3.org/2000/svg"><title id="fig27b-title">Wasm 与容器在给定冷启动次数下的累计启动延迟对比</title></svg>
+            <figcaption>横条为累计启动延迟（毫秒）。Wasm 的微秒级启动在频繁伸缩下优势被数量级放大，这是它在边缘/函数场景受青睐的原因。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var WASM_MS = 0.05, DOCKER_MS = 100;
+            var n = document.getElementById('cs-n');
+            var nOut = document.getElementById('cs-n-out');
+            var status = document.getElementById('cs-status');
+            var svg = document.getElementById('cs-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var PRESETS = { low: 10, high: 1000 };
+            function human(ms) {
+                if (ms < 1000) return ms.toFixed(ms < 10 ? 2 : 1) + ' ms';
+                return (ms / 1000).toFixed(1) + ' s';
+            }
+            function bar(y, label, val, max, color) {
+                var b = document.createElementNS(NS, 'rect');
+                b.setAttribute('x', 150); b.setAttribute('y', y); b.setAttribute('height', 32);
+                b.setAttribute('width', Math.max(2, val / max * 600)); b.setAttribute('rx', 6);
+                b.setAttribute('fill', color); svg.appendChild(b);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 142); t.setAttribute('y', y + 21); t.setAttribute('text-anchor', 'end');
+                t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = label; svg.appendChild(t);
+                var v = document.createElementNS(NS, 'text');
+                v.setAttribute('x', 158 + Math.max(2, val / max * 600)); v.setAttribute('y', y + 21);
+                v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = human(val);
+                svg.appendChild(v);
+            }
+            function render() {
+                var count = Number(n.value);
+                nOut.textContent = count;
+                var wasm = count * WASM_MS, docker = count * DOCKER_MS;
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                bar(20, 'Wasm', wasm, docker, '#60a5fa');
+                bar(74, '容器', docker, docker, '#fca5a5');
+                status.textContent = count + ' 次冷启动：Wasm 累计 ' + human(wasm) + '，容器累计 ' + human(docker) +
+                    '，相差约 ' + Math.round(docker / wasm) + ' 倍。' +
+                    (count >= 500 ? ' 高频伸缩下，微秒级启动的优势被数量级放大。' : ' 低频场景下，两者绝对差异感知不强。');
+            }
+            n.addEventListener('input', render);
+            Array.prototype.slice.call(document.querySelectorAll('[data-preset]')).forEach(function (b) {
+                b.addEventListener('click', function () { n.value = PRESETS[b.getAttribute('data-preset')]; render(); });
+            });
+            render();
+        })();
+        </script>
+
         <div class="highlight">
             <strong>前瞻判断：</strong>我个人认为 Wasm 不会取代容器——而是和容器形成互补。容器管理"重量级服务"（数据库、消息队列、长时间运行的应用），Wasm 负责"轻量级任务"（函数计算、数据转换、策略执行）。两者的边界正在通过 <code>containerd-wasm-shim</code> 这样的项目模糊化，K8s 集群中可以同时调度容器 Pod 和 Wasm Pod。
         </div>

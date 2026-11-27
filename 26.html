@@ -560,6 +560,66 @@ console.log(response.usage);
 // }
 // 第二次调用时 cache_read_input_tokens 会变成 14000</code></pre>
 
+        <div class="note">
+            <strong>🎛️ 动手试一试：</strong>缓存命中部分按 90% 折扣计。拖动固定前缀、每次新增、请求次数，看开启 Prompt Caching 后总输入“计费 token”降了多少。这里用<strong>相对单位</strong>而非美元（不同模型定价不同，<strong>教学示意</strong>）。
+        </div>
+        <p><label for="pc-p">固定前缀 token：</label> <input id="pc-p" type="range" min="1000" max="30000" step="1000" value="14000"> <output for="pc-p" id="pc-p-out">14000</output></p>
+        <p><label for="pc-n">每次新增 token：</label> <input id="pc-n" type="range" min="50" max="2000" step="50" value="500"> <output for="pc-n" id="pc-n-out">500</output></p>
+        <p><label for="pc-r">请求次数：</label> <input id="pc-r" type="range" min="1" max="1000" step="1" value="100"> <output for="pc-r" id="pc-r-out">100</output></p>
+        <div class="control-row" role="group" aria-label="缓存成本场景">
+            <button type="button" data-preset="low">低频调用</button>
+            <button type="button" data-preset="high">高频调用</button>
+        </div>
+        <p class="status" id="pc-status" aria-live="polite"></p>
+        <figure>
+            <svg id="pc-bars" role="img" aria-labelledby="fig26b-title" viewBox="0 0 840 130" xmlns="http://www.w3.org/2000/svg"><title id="fig26b-title">开启与未开启 Prompt Caching 时的相对计费 token 对比</title></svg>
+            <figcaption>横条为相对计费 token（未开启无任何折扣，开启后缓存命中部分按 10% 计）。请求次数越多，固定前缀的缓存收益越明显。</figcaption>
+        </figure>
+        <script>
+        (function () {
+            var P = document.getElementById('pc-p'), N = document.getElementById('pc-n'), R = document.getElementById('pc-r');
+            var PO = document.getElementById('pc-p-out'), NO = document.getElementById('pc-n-out'), RO = document.getElementById('pc-r-out');
+            var status = document.getElementById('pc-status');
+            var svg = document.getElementById('pc-bars');
+            var NS = 'http://www.w3.org/2000/svg';
+            var PRESETS = { low: [14000, 500, 5], high: [14000, 500, 500] };
+            function bar(y, label, val, max, color) {
+                var b = document.createElementNS(NS, 'rect');
+                b.setAttribute('x', 150); b.setAttribute('y', y); b.setAttribute('height', 32);
+                b.setAttribute('width', Math.max(2, val / max * 600)); b.setAttribute('rx', 6);
+                b.setAttribute('fill', color); svg.appendChild(b);
+                var t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', 142); t.setAttribute('y', y + 21); t.setAttribute('text-anchor', 'end');
+                t.setAttribute('font-size', '14'); t.setAttribute('fill', '#334155'); t.textContent = label; svg.appendChild(t);
+                var v = document.createElementNS(NS, 'text');
+                v.setAttribute('x', 158 + Math.max(2, val / max * 600)); v.setAttribute('y', y + 21);
+                v.setAttribute('font-size', '13'); v.setAttribute('fill', '#1e3a5f'); v.textContent = Math.round(val).toLocaleString();
+                svg.appendChild(v);
+            }
+            function render() {
+                var p = Number(P.value), n = Number(N.value), r = Number(R.value);
+                PO.textContent = p; NO.textContent = n; RO.textContent = r;
+                var without = (p + n) * r;
+                var withCache = (p + n) + (r - 1) * (n + 0.1 * p);
+                var save = without ? Math.round((1 - withCache / without) * 100) : 0;
+                while (svg.lastChild && svg.lastChild.nodeName !== 'title') { svg.removeChild(svg.lastChild); }
+                bar(20, '未开启缓存', without, without, '#fca5a5');
+                bar(74, '开启缓存', withCache, without, '#86efac');
+                status.textContent = r + ' 次请求、前缀 ' + p + ' token → 未开启约 ' + Math.round(without).toLocaleString() +
+                    '，开启后约 ' + Math.round(withCache).toLocaleString() + ' 相对计费 token，省下约 ' + save + '%。' +
+                    (r < 5 ? ' 请求太少，首次建缓存的开销还未被摊薄。' : ' 请求越多，固定前缀的缓存收益越大。');
+            }
+            [P, N, R].forEach(function (el) { el.addEventListener('input', render); });
+            Array.prototype.slice.call(document.querySelectorAll('[data-preset]')).forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var v = PRESETS[b.getAttribute('data-preset')];
+                    P.value = v[0]; N.value = v[1]; R.value = v[2]; render();
+                });
+            });
+            render();
+        })();
+        </script>
+
         <h3>Token 压缩策略</h3>
 
         <p>除了利用 API 层的缓存机制，应用层也能大幅优化 token 消耗：</p>
